@@ -33,14 +33,20 @@
  */
 
 #include "Arduino.h"
+#include <SoftwareWire.h>
+SoftwareWire myWire;
+
 #include <Wire.h>
+#define myWire Wire
 
 #include "Adafruit_MPU6050.h"
 
 /*!
  *    @brief  Instantiates a new MPU6050 class
  */
-Adafruit_MPU6050::Adafruit_MPU6050(void) {}
+Adafruit_MPU6050::Adafruit_MPU6050(int D_MPU_SDA, int D_MPU_SCL) {
+  myWire = SoftwareWire(D_MPU_SDA, D_MPU_SCL);
+}
 
 /*!
  *    @brief  Cleans up the MPU6050 class

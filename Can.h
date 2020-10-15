@@ -24,7 +24,7 @@ private:
   
 
 public:
-  Can(uint8_t r_rx, uint8_t r_tx, int r_baudrate, int g_rx, int g_tx, int g_baudrate);
+  Can(uint8_t r_rx, uint8_t r_tx, int r_baudrate, uint8_t D_BMP_SDA, uint8_t D_BMP_SCL, int g_baudrate, uint8_t D_MPU_SDA, uint8_t D_MPU_SCL);
   Location          getLocation();
   void              getGy(Vector3* a, Vector3* gy);
 

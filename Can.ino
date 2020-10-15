@@ -1,5 +1,10 @@
 #include "Can.h"
 
+#define D_MPU_SCL 4
+#define D_MPU_SDA 5
+#define D_BMP_SCL 6
+#define D_BMP_SDA 7
+
 // BMP280 (temperature, pressure and altitude)
   // SCL (clock)
   // SDA (data)
@@ -14,7 +19,7 @@
   // RX
   // TX
 
-Can can(2, 3, 9600, 4, 5, 9600);
+Can can(2, 3, 9600, D_BMP_SDA, D_BMP_SCL, 9600, D_MPU_SDA, D_MPU_SCL);
 
 
 void setup() {

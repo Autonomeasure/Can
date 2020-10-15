@@ -24,12 +24,16 @@
 
 #include <Adafruit_Sensor.h>
 
-#ifdef __AVR_ATtiny85__
- #include "TinyWireM.h"
- #define Wire TinyWireM
-#else
- #include <Wire.h>
-#endif
+//#ifdef __AVR_ATtiny85__
+// #include "TinyWireM.h"
+// #define Wire TinyWireM
+//#else
+// #include <Wire.h>
+//#endif
+
+#include <SoftwareWire.h>
+#include <Wire.h>
+//#define Wire SoftwareWire
 
 /*=========================================================================
     I2C ADDRESS/BITS/SETTINGS
@@ -123,7 +127,7 @@ class Adafruit_BMP280_Unified : public Adafruit_Sensor
 class Adafruit_BMP280
 {
   public:
-    Adafruit_BMP280();
+    Adafruit_BMP280(uint8_t D_BMP_SDA, uint8_t D_BMP_SCL);
     Adafruit_BMP280(int8_t cspin);
     Adafruit_BMP280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
 

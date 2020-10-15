@@ -5,7 +5,7 @@
 #include "Adafruit_BMP280.h"
 #include "Adafruit_MPU6050.h"
 
-Can::Can(uint8_t r_rx, uint8_t r_tx, int r_baudrate, int g_rx, int g_tx, int g_baudrate) {
+Can::Can(uint8_t r_rx, uint8_t r_tx, int r_baudrate, uint8_t D_BMP_SDA, uint8_t D_BMP_SCL, int g_baudrate, uint8_t D_MPU_SDA, uint8_t D_MPU_SCL) {
   // The Can constructor
   // Re-enable this code when the A4/A5 bug is fixed
 //  radio = new SoftwareSerial(r_rx, r_tx);
@@ -15,7 +15,7 @@ Can::Can(uint8_t r_rx, uint8_t r_tx, int r_baudrate, int g_rx, int g_tx, int g_b
 //  gps = new TinyGPS();
 //  bmp = new Adafruit_BMP280();
 
-  mpu = new Adafruit_MPU6050();
+  mpu = new Adafruit_MPU6050(D_BMP_SDA, D_BMP_SCL);
 
   mpu->setAccelerometerRange(MPU6050_RANGE_16_G);
   mpu->setGyroRange(MPU6050_RANGE_250_DEG);

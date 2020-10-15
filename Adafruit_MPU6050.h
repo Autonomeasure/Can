@@ -185,7 +185,7 @@ private:
  */
 class Adafruit_MPU6050 {
 public:
-  Adafruit_MPU6050();
+  Adafruit_MPU6050(int D_MPU_SDA, int D_MPU_SCL);
   ~Adafruit_MPU6050();
 
   bool begin(uint8_t i2c_addr = MPU6050_I2CADDR_DEFAULT, TwoWire *wire = &Wire,
