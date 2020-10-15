@@ -19,15 +19,15 @@ Can can(2, 3, 9600, 4, 5, 9600);
 
 void setup() {
   Serial.begin(9600);
-
-//  if (!can.bmp->begin()) {
-//    Serial.println("Can't find BMP sensor..");
-//    while (true);
-//  }
+  if (!can.mpu->begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
 }
 
 void loop() {
-//  Serial.println(can.bmp->readTemperature());
   Vector3 a;
   Vector3 gy;
   can.getGy(&a, &gy);

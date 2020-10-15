@@ -5,6 +5,7 @@
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
 #include "Adafruit_BMP280.h"
+#include "Adafruit_MPU6050.h"
 
 struct Location {
   float lat;
@@ -31,4 +32,5 @@ public:
   SoftwareSerial*   gpsSerial;
   TinyGPS*          gps;
   Adafruit_BMP280*  bmp;
+  Adafruit_MPU6050* mpu;
 };
