@@ -33,11 +33,11 @@
  */
 
 #include "Arduino.h"
-#include <SoftwareWire.h>
-SoftwareWire myWire;
-
+//#include <SoftwareWire.h>
+//SoftwareWire mpuWire;
+//
 #include <Wire.h>
-#define myWire Wire
+//#define mpuWire Wire
 
 #include "Adafruit_MPU6050.h"
 
@@ -45,7 +45,7 @@ SoftwareWire myWire;
  *    @brief  Instantiates a new MPU6050 class
  */
 Adafruit_MPU6050::Adafruit_MPU6050(int D_MPU_SDA, int D_MPU_SCL) {
-  myWire = SoftwareWire(D_MPU_SDA, D_MPU_SCL);
+//  mpuWire = SoftwareWire(D_MPU_SDA, D_MPU_SCL);
 }
 
 /*!

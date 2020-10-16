@@ -14,11 +14,11 @@
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 #include "Arduino.h"
-#include <SoftwareWire.h>
-SoftwareWire bmpWire;
+//#include <SoftwareWire.h>
+//SoftwareWire bmpWire;
 
 #include <Wire.h>
-#define bmpWire Wire
+//#define bmpWire Wire
 #include <SPI.h>
 #include "Adafruit_BMP280.h"
 
@@ -31,7 +31,7 @@ SoftwareWire bmpWire;
 Adafruit_BMP280::Adafruit_BMP280(uint8_t D_BMP_SDA, uint8_t D_BMP_SCL)
   : _cs(-1), _mosi(-1), _miso(-1), _sck(-1)
 { 
-  bmpWire = SoftwareWire(D_BMP_SDA, D_BMP_SCL);
+//  bmpWire = SoftwareWire(D_BMP_SDA, D_BMP_SCL);
 }
 
 Adafruit_BMP280::Adafruit_BMP280(int8_t cspin)

@@ -30,9 +30,12 @@
 //#else
 // #include <Wire.h>
 //#endif
+//#include <SoftwareWire.h>
+//SoftwareWire bmpWire;
 
-#include <SoftwareWire.h>
 #include <Wire.h>
+//#define bmpWire Wire
+
 //#define Wire SoftwareWire
 
 /*=========================================================================
