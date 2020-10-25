@@ -44,9 +44,7 @@
 /*!
  *    @brief  Instantiates a new MPU6050 class
  */
-Adafruit_MPU6050::Adafruit_MPU6050(int D_MPU_SDA, int D_MPU_SCL) {
-//  mpuWire = SoftwareWire(D_MPU_SDA, D_MPU_SCL);
-}
+Adafruit_MPU6050::Adafruit_MPU6050() {}
 
 /*!
  *    @brief  Cleans up the MPU6050 class
