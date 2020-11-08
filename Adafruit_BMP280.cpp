@@ -28,10 +28,10 @@
  ***************************************************************************/
 
 
-Adafruit_BMP280::Adafruit_BMP280(uint8_t D_BMP_SDA, uint8_t D_BMP_SCL)
+Adafruit_BMP280::Adafruit_BMP280()
   : _cs(-1), _mosi(-1), _miso(-1), _sck(-1)
 { 
-//  bmpWire = SoftwareWire(D_BMP_SDA, D_BMP_SCL);
+
 }
 
 Adafruit_BMP280::Adafruit_BMP280(int8_t cspin)

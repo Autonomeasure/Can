@@ -1,43 +1,33 @@
 #include "Can.h"
 
-Can can(4, 3, 9600);
+#define interval 100
 
+long previousMillis = 0;
 
+Can can(7, 5, 9600, 4, 3, 9600);
 
 void setup() {
   Serial.begin(9600);
-//  if (!can.mpu->begin()) {
-//    Serial.println("Failed to find MPU6050 chip");
-//    while (1) {
-//      delay(10);
-//    }
-//  }
+  if (!can.bmp->begin()) {
+    Serial.println("BMP sensor failed initializing!");
+    while (1)
+      ;
+  }
+  can.begin();
+  // Serial.println("Before can.begin();");
+  // uint8_t cBegin = can.begin();
+  // Serial.println("After can.begin();");
+  // if (cBegin > 0) {
+  //   Serial.println("Initialization failed..");
+  //   Serial.println(cBegin);
+  // }
 }
 
 void loop() {
-  Vector3 a;
-  Vector3 gy;
-  can.getGy(&a, &gy);
-  Serial.print("Accelerometer: ");
-  Serial.print("x = ");
-  Serial.print(a.x);
-  Serial.print(" | y = ");
-  Serial.print(a.y);
-  Serial.print(" | z = ");
-  Serial.println(a.z);
+  unsigned long currentMillis = millis();
 
-  Serial.print("Gyroscope: ");
-  Serial.print("x = ");
-  Serial.print(gy.x);
-  Serial.print(" | y = ");
-  Serial.print(gy.y);
-  Serial.print(" | z = ");
-  Serial.println(gy.z);
-
-  Location loc = can.getLocation();
-  Serial.print("Lat: ");
-  Serial.println(loc.lat);
-  Serial.print("Lon: ");
-  Serial.println(loc.lon);
-  delay(200);
+  if (currentMillis - previousMillis > interval) {
+    previousMillis = currentMillis;
+    can.tick();
+  }
 }
