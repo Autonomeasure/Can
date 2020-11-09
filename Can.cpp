@@ -101,32 +101,32 @@ Vector3 * Can::acceleration_difference() {
 uint8_t Can::begin() {
 	// if (!mpu->begin()) {
 	// 	return 1;
-	// } if (!bmp->begin()) {
-	// 	return 2;
+	// } 
+	if (!bmp->begin()) {
+		return 2;
+	}
+	// Serial.println("HISTORY");
+	// for (uint8_t i = 0; i < sizeof(Can::acceleration_history) / sizeof(Vector3); i++) {
+	// 	Vector3 *a = &Can::acceleration_history[i];
+	// 	Serial.print("x = ");
+	// 	Serial.print(a->x);
+	// 	Serial.print(" | y = ");
+	// 	Serial.print(a->y);
+	// 	Serial.print(" | z = ");
+	// 	Serial.println(a->z);
 	// }
-	// return 0;
-	Serial.println("HISTORY");
-	for (uint8_t i = 0; i < sizeof(Can::acceleration_history) / sizeof(Vector3); i++) {
-		Vector3 *a = &Can::acceleration_history[i];
-		Serial.print("x = ");
-		Serial.print(a->x);
-		Serial.print(" | y = ");
-		Serial.print(a->y);
-		Serial.print(" | z = ");
-		Serial.println(a->z);
-	}
 
-	Serial.println("DIFFERENCE");
-	Vector3 *test = acceleration_difference();
-	for (uint8_t i = 0; i < 30; i++) {
-		Vector3 *a = test + i;
-		Serial.print("x = ");
-		Serial.print(a->x);
-		Serial.print(" | y = ");
-		Serial.print(a->y);
-		Serial.print(" | z = ");
-		Serial.println(a->z);
-	}
+	// Serial.println("DIFFERENCE");
+	// Vector3 *test = acceleration_difference();
+	// for (uint8_t i = 0; i < 30; i++) {
+	// 	Vector3 *a = test + i;
+	// 	Serial.print("x = ");
+	// 	Serial.print(a->x);
+	// 	Serial.print(" | y = ");
+	// 	Serial.print(a->y);
+	// 	Serial.print(" | z = ");
+	// 	Serial.println(a->z);
+	// }
 	return 0;
 }
 
@@ -166,9 +166,7 @@ void Can::tick() {
 
 	// debug(loc, a, gy, pressure, temperature);
 
-	// Vector3 *aDiff = Can::acceleration_difference();
-	// for (uint8_t i = 0; i < 30; i++) {
-	// 	Vector3 t = *(aDiff + i);
-	// 	Serial.println(*t);
-	// }
+	Serial.print(temperature);
+	Serial.print(", ");
+	Serial.println(pressure / 100);
 }
