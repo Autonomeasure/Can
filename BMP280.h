@@ -14,7 +14,7 @@ public:
     ~BMP280();
 
     bool    begin(); // Call Adafruit_BMP280::begin function and return the method
-    float   getTemperature(); // Read the temperature from the BMP sensor
-    float   getPressure(); // Read the pressure from the BMP sensor
-    float   getAltitude(); // Get the altitude from the BMP sensor with seaLevelhPa
+    void    getTemperature(float *temp); // Read the temperature from the BMP sensor
+    void    getPressure(float *pressure); // Read the pressure from the BMP sensor
+    void    getAltitude(float *altitude); // Get the altitude from the BMP sensor with seaLevelhPa
 };

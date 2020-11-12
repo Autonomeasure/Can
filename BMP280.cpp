@@ -16,16 +16,19 @@ bool BMP280::begin() {
 }
 
 // Read the temperature from the BMP sensor
-float BMP280::getTemperature() {
-    return bmp->readTemperature();
+void BMP280::getTemperature(float *temp) {
+    float t = bmp->readTemperature();
+    temp = &t;
 }
 
 // Read the pressure from the BMP sensor
-float BMP280::getPressure() {
-    return bmp->readPressure();
+void BMP280::getPressure(float *pressure) {
+    float p = bmp->readPressure();
+    pressure = &p;
 }
 
 // Get the altitude from the BMP sensor with seaLevelhPa
-float BMP280::getAltitude() {
-    return bmp->readAltitude(seaLevelhPa);
+void BMP280::getAltitude(float *altitude) {
+    float alt = bmp->readAltitude(seaLevelhPa);
+    altitude = &alt;
 }
