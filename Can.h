@@ -2,8 +2,15 @@
 #define CAN_H
 #endif
 #include <Arduino.h>
+#include "Radio.h"
 #include "BMP280.h"
 #include "MPU6050.h"
+
+struct Vector3 {
+  float x;
+  float y;
+  float z;
+};
 
 class Can {
 private:
@@ -30,7 +37,7 @@ public:
     void    tick(); // This method gets called every 100ms
 
     void    getAcceleration(Vector3 *a); // Get the acceleration from the MPU module
-    void    getGy(Vector3* gy); // Get the gyroscope data from the MPU module
+    void    getGy(Vector3 *gy); // Get the gyroscope data from the MPU module
     void    getTemperature(float *bmpTemp, float *mpuTemp); // Get the temperatures from the BMP and MPU module
     void    getAltitude(float *altitude); // Get the altitude from the BMP module
 };

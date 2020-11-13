@@ -4,11 +4,7 @@
 #include <Arduino.h>
 #include "Adafruit_MPU6050.h"
 
-struct Vector3 {
-  float x;
-  float y;
-  float z;
-};
+
 
 class MPU6050 {
 private:

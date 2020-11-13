@@ -49,7 +49,7 @@ void Can::getAcceleration(Vector3 *a) {
 }
 
 // Get the gyroscope data from the MPU module
-void Can::getGy(Vector3* gy) {
+void Can::getGy(Vector3 *gy) {
     mpu->getGy(nullptr, gy, nullptr);
 }
 
