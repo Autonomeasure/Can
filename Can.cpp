@@ -2,7 +2,7 @@
 
 Can::Can(float seaLevelhPa) {
     bmp = new BMP280(seaLevelhPa);
-    mpu = new MPU6050();
+    mpu = new MPU();
 
     STATE = 0b00000000;
 }

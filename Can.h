@@ -10,7 +10,7 @@
 class Can {
 private:
     BMP280 *bmp;
-    MPU6050 *mpu;
+    MPU *mpu;
     
     // The state of the can:
     // 00000000 (0): Nothing yet..
