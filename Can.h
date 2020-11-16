@@ -2,15 +2,16 @@
 #define CAN_H
 #endif
 #include <Arduino.h>
-#include "Radio.h"
-#include "BMP280.h"
-#include "MPU6050.h"
 
-struct Vector3 {
+typedef struct {
   float x;
   float y;
   float z;
-};
+}Vector3;
+
+#include "BMP280.h"
+#include "MPU6050.h"
+#include "Radio.h"
 
 class Can {
 private:

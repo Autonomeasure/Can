@@ -4,8 +4,6 @@
 #include <Arduino.h>
 #include "Adafruit_MPU6050.h"
 
-
-
 class MPU6050 {
 private:
     Adafruit_MPU6050 *mpu;

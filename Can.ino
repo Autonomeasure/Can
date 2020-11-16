@@ -4,7 +4,6 @@
 
 long previousMillis = 0;
 
-//Can can(7, 5, 9600, 4, 3, 9600);/
 Can *can;
 
 void setup() {
