@@ -1,6 +1,5 @@
 #if !defined(GPS_H)
 #define GPS_H
-#endif
 #include <SoftwareSerial.h>
 
 struct Location {
@@ -18,3 +17,4 @@ public:
   bool begin(uint8_t baudrate = 9600);
   void read(); // Read one line from the gpsSerial object
 };
+#endif

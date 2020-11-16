@@ -1,14 +1,8 @@
 #if !defined(CAN_H)
 #define CAN_H
-#endif
 #include <Arduino.h>
 
-typedef struct {
-  float x;
-  float y;
-  float z;
-}Vector3;
-
+#include "Vector3.h"
 #include "BMP280.h"
 #include "MPU6050.h"
 #include "Radio.h"
@@ -42,3 +36,4 @@ public:
     void    getTemperature(float *bmpTemp, float *mpuTemp); // Get the temperatures from the BMP and MPU module
     void    getAltitude(float *altitude); // Get the altitude from the BMP module
 };
+#endif

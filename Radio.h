@@ -1,8 +1,8 @@
 #if !defined(RADIO_H)
 #define RADIO_H
-#endif
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include "Vector3.h"
 
 struct Message {
 	String raw;
@@ -27,3 +27,4 @@ public:
 
 	void send(Message *msg); // Send the message to the ground station
 };
+#endif

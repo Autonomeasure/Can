@@ -1,6 +1,5 @@
 #if !defined(BMP280_H)
 #define BMP280_H
-#endif
 #include <Arduino.h>
 #include "Adafruit_BMP280.h"
 
@@ -18,3 +17,4 @@ public:
     void    getPressure(float *pressure); // Read the pressure from the BMP sensor
     void    getAltitude(float *altitude); // Get the altitude from the BMP sensor with seaLevelhPa
 };
+#endif
