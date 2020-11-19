@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <string.h>
 #include "GPS.h"
 
 GPS::GPS(uint8_t rxPin, uint8_t txPin) {
@@ -30,36 +31,30 @@ uint8_t GPS::read(char *buf) {
 bool GPS::decode(NMEA *nmea, char *buf, uint8_t len) {
   if (len < 1 || len > 82) return false; // Sentence is too short or too long
   if (buf[0] != '$') return false;       // Invalid start of the NMEA sentence
-}
-
-
-
-// Decode the raw NMEA string to an NMEA object
-bool GPS::decode(NMEA *nmea) {
-  // Check if this is a valid sentence
-  Serial.println(raw);
-  if (raw[0] != '$') return false;
 
   // Split at every comma
-  char temp[12][32];
-  uint8_t prev_i;
-  uint8_t count;
-  for (uint8_t i = 0; i < sizeof(raw) / sizeof(char); i++) {
-    if (raw[i] == '\r') {
-      if (raw[i - 1] == '\n') {
-        // At the end :)
-        memcpy(&temp[count], raw[prev_i], i - prev_i);
-        count++;
-        break;
-      }
+  char delim[] = ",";
+  char *ptr = strtok(buf, delim);
+
+  char temp[16];
+
+  uint8_t i = 0;
+
+  while(ptr != NULL) {
+    sprintf(temp, "%s", ptr);
+    Serial.print("i: ");
+    Serial.println(i);
+
+    if (i == 0 && strcmp(temp, "$GPGGA")) return false; // Not the message we want (with the right information) so return false
+    if (i == 1) { // Time should be here in the ssmmhh format
+      if (strlen(temp) < 6) return false; // Not enough chars so return false
+      nmea->time.h = uint8_t(temp[0] + temp[1]);
+      nmea->time.m = uint8_t(temp[2] + temp[3]);
+      nmea->time.s = uint8_t(temp[4] + temp[5]);
+      return true;
     }
-    if (raw[i] == ',') {
-      // Comma found, split
-      memcpy(&temp[count], raw[prev_i], i - prev_i);
-      count++;
-    }
+    i++;
+    ptr = strtok(NULL, delim);
   }
-  for (uint8_t i = 0; i < count; i++) {
-    Serial.println(temp[i]);
-  }
+  return true;
 }

@@ -52,10 +52,16 @@ GPS gps(3, 4);
 
 void setup() {
   Serial.begin(9600);
-//  String("$GPGGA,170834,4124.8963,N,08151.6838,W,1,05,1.5,280.2,M,-34.0,M,,,*75\n\r\0\0\0\0\0\0\0\0\0\0").toCharArray(*gps.raw, 82);
+  char *raw = "$GPGGA,170834,4124.8963,N,08151.6838,W,1,05,1.5,280.2,M,-34.0,M,,,*75\n\r";
   NMEA nmea;
-  gps.decode(&nmea);
-  while (1);
+//  Serial.print("Decode result: ");
+  /*Serial.println(*/gps.decode(&nmea, raw, strlen(raw))/*)*/;
+  Serial.print("Time: ");
+  Serial.print(nmea.time.h);
+  Serial.print(":");
+  Serial.print(nmea.time.m);
+  Serial.print(":");
+  Serial.println(nmea.time.s);
 }
 
 void loop() {
