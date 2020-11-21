@@ -1,8 +1,12 @@
 #include "Radio.h"
 
-Radio::Radio(uint8_t rx, uint8_t tx) {
+Radio::Radio(const uint8_t rx, const uint8_t tx) {
 	radio = new SoftwareSerial(rx, tx);
 	radio->begin(9600);
+}
+
+Radio::~Radio() {
+	
 }
 
 // Prepare the raw property of the Message object
@@ -36,5 +40,6 @@ void Radio::prepare(Message *msg) {
 
 // Send the message to the ground station
 void Radio::send(Message *msg) {
+	prepare(msg);
 	radio->write(&msg->raw);
 }

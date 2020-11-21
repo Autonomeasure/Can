@@ -46,24 +46,36 @@
 //	}
 //}
 
-#include "GPS.h"
+// #include "Radio.h"
+// #include "MPU6050.h"
 
-GPS gps(3, 4);
+#include <SoftwareSerial.h>
+SoftwareSerial radio(28, 30);
+
+// Radio radio(28, 30);
+// MPU mpu;
 
 void setup() {
-  Serial.begin(9600);
-  char *raw = "$GPGGA,170834,4124.8963,N,08151.6838,W,1,05,1.5,280.2,M,-34.0,M,,,*75\n\r";
-  NMEA nmea;
-//  Serial.print("Decode result: ");
-  /*Serial.println(*/gps.decode(&nmea, raw, strlen(raw))/*)*/;
-  Serial.print("Time: ");
-  Serial.print(nmea.time.h);
-  Serial.print(":");
-  Serial.print(nmea.time.m);
-  Serial.print(":");
-  Serial.println(nmea.time.s);
+  // mpu.begin();
+  radio.begin(9600);
 }
 
 void loop() {
+  // Vector3 *a, *gy;
+  // float *temp;
+  // mpu.getGy(a, gy, temp);
+
+  // Message *msg;
+  // msg->mpuTemp = temp;
+  // msg->a = a;
+  // msg->gy = gy;
+  // radio.send(msg);
+  radio.println(millis());
+  // radio.print(a->x);
+  // radio.print(", ");
+  // radio.print(a->y);
+  // radio.print(", ");
+  // radio.println(a->z);
   
+  delay(200);
 }

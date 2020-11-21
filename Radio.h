@@ -22,7 +22,7 @@ private:
 	void prepare(Message *msg); // Prepare the raw property of the Message object
 
 public:
-	Radio(uint8_t rx, uint8_t tx);
+	Radio(const uint8_t rx, const uint8_t tx);
 	~Radio();
 
 	void send(Message *msg); // Send the message to the ground station
