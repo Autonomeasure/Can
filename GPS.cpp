@@ -1,60 +1,46 @@
 #include <Arduino.h>
-#include <string.h>
 #include "GPS.h"
 
-GPS::GPS(uint8_t rxPin, uint8_t txPin) {
-//  gpsSerial = new SoftwareSerial(rxPin, txPin);
+GPS::GPS(uint8_t rx_pin, uint8_t tx_pin) {
+  gpsSerial = new SoftwareSerial(rx_pin, tx_pin);
 }
 
 bool GPS::begin(uint8_t baudrate = 9600) {
   gpsSerial->begin(baudrate);
 }
 
-
-
-// Read one line from the gpsSerial object and put it into the char array pointer and return the length of the message
-uint8_t GPS::read(char *buf) {
-  uint8_t len;
+// Read gpsSerial and encode it (using gps.encode)
+void GPS::read() {
   while (gpsSerial->available()) {
-    buf[len] = gpsSerial->read();
-    if (buf[len] == '\r') { // \r should be the last char
-      if (buf[len - 1] == '\n') { // And \n should be the char before \r
-        // This is the end of the NMEA sentence
-        return len;
-      }
-    }
-    len++;
+    gps->encode(gpsSerial->read());
   }
 }
 
-// Decode the raw NMEA sentence to an NMEA object
-bool GPS::decode(NMEA *nmea, char *buf, uint8_t len) {
-  if (len < 1 || len > 82) return false; // Sentence is too short or too long
-  if (buf[0] != '$') return false;       // Invalid start of the NMEA sentence
-
-  // Split at every comma
-  char delim[] = ",";
-  char *ptr = strtok(buf, delim);
-
-  char temp[16];
-
-  uint8_t i = 0;
-
-  while(ptr != NULL) {
-    sprintf(temp, "%s", ptr);
-    Serial.print("i: ");
-    Serial.println(i);
-
-    if (i == 0 && strcmp(temp, "$GPGGA")) return false; // Not the message we want (with the right information) so return false
-    if (i == 1) { // Time should be here in the ssmmhh format
-      if (strlen(temp) < 6) return false; // Not enough chars so return false
-      nmea->time.h = uint8_t(temp[0] + temp[1]);
-      nmea->time.m = uint8_t(temp[2] + temp[3]);
-      nmea->time.s = uint8_t(temp[4] + temp[5]);
-      return true;
-    }
-    i++;
-    ptr = strtok(NULL, delim);
+// Get the time and put it in the char array, format: HHMMSSmm (length = 8)
+char *GPS::get_time() {
+  byte hour, minute, second, hundredths;
+  unsigned long age;
+  gps->crack_datetime(NULL, NULL, NULL, &hour, &minute, &second, &hundredths, &age);
+  if (age == TinyGPS::GPS_INVALID_AGE) {
+    return NULL;
+  } else {
+    char *ret;
+    sprintf(ret, "%02d%02d%02d%02d", hour, minute, second, hundredths);
+    return ret;
   }
-  return true;
+}
+
+// Get the current location of the can
+void GPS::get_position(float *flat, float *flon) {
+  gps->f_get_position(flat, flon);
+}
+
+// Get the current altitude
+float GPS::get_altitude() {
+  return gps->f_altitude();
+}
+
+// Get the current velocity in m/s
+float GPS::get_velocity() {
+  return gps->f_speed_mps();
 }

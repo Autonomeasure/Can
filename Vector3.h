@@ -1,4 +1,4 @@
-#ifndef VECTOR3_H
+#if !defined(VECTOR3_H)
 #define VECTOR3_H
 
 typedef struct {

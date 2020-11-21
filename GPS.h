@@ -1,33 +1,27 @@
 /*
  * File: GPS.h
  * Class: GPS
- * 
- * Structs: NMEA (https://en.wikipedia.org/wiki/NMEA_0183)
  */
 #if !defined(GPS_H)
 #define GPS_H
 #include <SoftwareSerial.h>
-
-struct Time {
-  uint8_t s;
-  uint8_t m;
-  uint8_t h;
-};
-
-struct NMEA {
-  Time time;
-};
+#include "TinyGPS.h"
 
 class GPS {
 private:
   SoftwareSerial *gpsSerial;
 
 public:
-  GPS(uint8_t rxPin, uint8_t txPin);
+  GPS(uint8_t rx_pin, uint8_t tx_pin);
 
-  bool    begin(uint8_t baudrate = 9600);
-  
-  uint8_t read(char *buf); // Read one line from the gpsSerial object and put it into the char array pointer and return the length of the message
-  bool    decode(NMEA *nmea, char *buf, uint8_t len); // Decode the raw NMEA sentence to a NMEA object  
+  TinyGPS *gps;
+
+  void  read();                                 // Read gpsSerial and encode it (using gps.encode)
+  char  *get_time();                            // Get the time and put it in the char array, format: HHMMSSmm (length = 8)
+  void  get_position(float *flat, float *flon); // Get the current location of the can
+  float get_altitude();                         // Get the current altitude
+  float get_velocity();                         // Get the current velocity in m/s
+
+  bool  begin(uint8_t baudrate = 9600);
 };
 #endif

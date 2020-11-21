@@ -11,71 +11,13 @@
  *    GitHub Autonomeasure: https://github.com/Autonomeasure
  *    GitHub Can repo:      https://github.com/Autonomeasure/Can
  */
-//#include "Can.h"
-//
-//#define interval 100
-//
-//long previousMillis = 0;
-//
-//Can *can;
-//
-//void setup() {
-//  Serial.begin(9600);
-//  can = new Can(1023.25); // seaLevelhPa is not correct yet
-//}
-//
-//void loop() {
-//	unsigned long currentMillis = millis();
-//
-//	if (currentMillis - previousMillis > interval) {
-//		previousMillis = currentMillis;
-//		// TICK
-//		if (can->getState() == 0b00000000) { // Check if the STATE is still 0
-//			// Check if we're falling => state 0b00000001
-//			// Check if we are falling using the acceleration and the altitude history
-//			bool altitude_falling = false;
-//			bool acceleration_falling = false;
-//			for (uint8_t i = 0; i < 9; i++) {
-//				if (can->altitude_history[9] - can->altitude_history[i] > 1.5) {
-//					altitude_falling = true;
-//				}
-//			}
-//			Vector3 *a;
-//			can->getAcceleration(a);
-//		}
-//	}
-//}
-
-// #include "Radio.h"
-// #include "MPU6050.h"
-
-#include <SoftwareSerial.h>
-SoftwareSerial radio(28, 30);
-
-// Radio radio(28, 30);
-// MPU mpu;
+ 
+#include "Can.h"
 
 void setup() {
-  // mpu.begin();
-  radio.begin(9600);
+  
 }
 
 void loop() {
-  // Vector3 *a, *gy;
-  // float *temp;
-  // mpu.getGy(a, gy, temp);
-
-  // Message *msg;
-  // msg->mpuTemp = temp;
-  // msg->a = a;
-  // msg->gy = gy;
-  // radio.send(msg);
-  radio.println(millis());
-  // radio.print(a->x);
-  // radio.print(", ");
-  // radio.print(a->y);
-  // radio.print(", ");
-  // radio.println(a->z);
   
-  delay(200);
 }

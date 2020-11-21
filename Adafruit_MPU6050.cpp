@@ -33,11 +33,8 @@
  */
 
 #include "Arduino.h"
-//#include <SoftwareWire.h>
-//SoftwareWire mpuWire;
-//
+
 #include <Wire.h>
-//#define mpuWire Wire
 
 #include "Adafruit_MPU6050.h"
 

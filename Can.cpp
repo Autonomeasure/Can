@@ -1,10 +1,9 @@
 #include "Can.h"
 
-Can::Can(float seaLevelhPa) {
+Can::Can(float seaLevelhPa, uint8_t radio_rx, uint8_t radio_tx, uint8_t gps_rx, uint8_t gps_tx) {
+    radio = new SoftwareSerial(radio_rx, radio_tx);
     bmp = new BMP280(seaLevelhPa);
     mpu = new MPU();
-
-    STATE = 0b00000000;
 }
 
 Can::~Can() {
@@ -13,6 +12,7 @@ Can::~Can() {
 
 // Call all the begin methods and return a boolean to check if something failed
 bool Can::begin() {
+    radio->begin(9600);
     bool m = mpu->begin();
     bool b = bmp->begin();
     return b && m;
@@ -27,7 +27,7 @@ void Can::tick() {
     // Check if we have landed yet
 }
 
-// Set the state of the Can::STATE variable
+// Set the state of the Can::STATE variable and set it in the EEPROM memory
 bool Can::setState(uint8_t state) {
     // Check if the new state is lower than the last state (so we're going back??) if so return true
     if (state < STATE) {
@@ -35,11 +35,20 @@ bool Can::setState(uint8_t state) {
         return true;
     }
     STATE = state;
+    EEPROM.put(STATE_ADDRESS, state);
     return false;
 }
 
 // Get Can::STATE
 uint8_t Can::getState() {
+    if (STATE == 0b00000000) {
+      // STATE is not set, get it from the EEPROM (and if that is empty set both to 00000001)
+      EEPROM.get(STATE_ADDRESS, STATE);
+      if (STATE == 0b00000000) {
+        // STATE is still equal to 0, set both to 00000001
+        setState(0b0000001);
+      }
+    }
     return STATE;
 }
 

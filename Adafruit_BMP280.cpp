@@ -14,11 +14,8 @@
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 #include "Arduino.h"
-//#include <SoftwareWire.h>
-//SoftwareWire bmpWire;
 
 #include <Wire.h>
-//#define bmpWire Wire
 #include <SPI.h>
 #include "Adafruit_BMP280.h"
 
