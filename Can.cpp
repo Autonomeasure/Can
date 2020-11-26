@@ -1,13 +1,27 @@
+/*
+ * CanSat 2020-2021 Team Autonomeasure - Can
+ * Code written by: Joep van Dijk
+ * First mission:
+ *    Our first mission is to be able to land properly, collect data from the BMP280 sensor and send that data to the groundstation at least one time per second. 
+ * 
+ * Second mission:
+ *    Our second mission is to make a sustainable data collection station. 
+ * 
+ * Links:
+ *    GitHub Autonomeasure:           https://github.com/Autonomeasure
+ *    GitHub Can repo:                https://github.com/Autonomeasure/Can
+ *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
+ *    Instagram:                      https://instagram.com/Autonomeasure/
+ */
 #include "Can.h"
 
 Can::Can(float seaLevelhPa, uint8_t radio_rx, uint8_t radio_tx, uint8_t gps_rx, uint8_t gps_tx) {
-    radio = new SoftwareSerial(radio_rx, radio_tx);
-    bmp = new BMP280(seaLevelhPa);
-    mpu = new MPU();
-}
-
-Can::~Can() {
-
+  radio = new SoftwareSerial(radio_rx, radio_tx);
+  bmp = new Adafruit_BMP280(seaLevelhPa);
+  mpu = new Adafruit_MPU6050();
+  mpu->setAccelerometerRange(MPU6050_RANGE_16_G);
+  mpu->setGyroRange(MPU6050_RANGE_250_DEG);
+  mpu->setFilterBandwidth(MPU6050_BAND_21_HZ);
 }
 
 // Call all the begin methods and return a boolean to check if something failed
@@ -52,27 +66,28 @@ uint8_t Can::getState() {
     return STATE;
 }
 
-// Get the acceleration from the MPU module
-void Can::getAcceleration(Vector3 *a) {
-    mpu->getGy(a, nullptr, nullptr);
+// Get the data (acceleration, gyroscope and temperature) data from the MPU6050 module
+void Can::getGy(Vector3 *a, Vector3 *gy, float *temp) {
+  sensors_event_t at, gt, t;
+  mpu->getEvent(&at, &gt, &t);
+
+  a->x = at.acceleration.x;
+  a->y = at.acceleration.y;
+  a->z = at.acceleration.z;
+  gy->x = gt.gyro.x;
+  gy->y = gt.gyro.y;
+  gy->z = gt.gyro.z;
+  *temp = t.temperature;
 }
 
-// Get the gyroscope data from the MPU module
-void Can::getGy(Vector3 *gy) {
-    mpu->getGy(nullptr, gy, nullptr);
+// Get the temperature data from the BMP280 module
+void Can::getMPUTemperature(float *temperature) {
+  float temp = bmp->readTemperature();
+  temperature = &temp;  
 }
 
-// Get the temperatures from the BMP and MPU module
-void Can::getTemperature(float *bmpTemp, float *mpuTemp) {
-    bmp->getTemperature(bmpTemp);
-    mpu->getGy(nullptr, nullptr, mpuTemp);
-}
-
-// Get the altitude from the BMP module
-void Can::getAltitude(float *altitude) {
-    bmp->getAltitude(altitude);
-
-    // Shift everything to the left
-    memcpy(altitude_history, &altitude_history[1], sizeof(altitude_history) / sizeof(float));
-    altitude_history[sizeof(altitude_history) / sizeof(float) - 1] = *altitude;
+// Get the pressure data from the BMP280 module
+void Can::getMPUPressure(float *pressure) {
+  float press = bmp->readPressure();
+  pressure = &press;
 }

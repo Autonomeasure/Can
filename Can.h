@@ -1,3 +1,18 @@
+/*
+ * CanSat 2020-2021 Team Autonomeasure - Can
+ * Code written by: Joep van Dijk
+ * First mission:
+ *    Our first mission is to be able to land properly, collect data from the BMP280 sensor and send that data to the groundstation at least one time per second. 
+ * 
+ * Second mission:
+ *    Our second mission is to make a sustainable data collection station. 
+ * 
+ * Links:
+ *    GitHub Autonomeasure:           https://github.com/Autonomeasure
+ *    GitHub Can repo:                https://github.com/Autonomeasure/Can
+ *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
+ *    Instagram:                      https://instagram.com/Autonomeasure/
+ */
 #if !defined(CAN_H)
 #define CAN_H
 #include <Arduino.h>
@@ -12,13 +27,16 @@
 #define STATE_ADDRESS 0
 
 #include "Vector3.h"
-#include "BMP280.h"
-#include "MPU6050.h"
+#include "Adafruit_BMP280.h"
+#include "Adafruit_MPU6050.h"
 
 class Can {
 private:
-    BMP280 *bmp;
-    MPU *mpu;
+//    BMP280 *bmp;
+//    MPU *mpu;
+    Adafruit_BMP280 *bmp;
+    Adafruit_MPU6050 *mpu;
+    
     
     // The state of the can:
     // 00000000 (0): Unset, check if the EEPROM memory has it, otherwise, set it to 00000001 so we know it the memory is empty
@@ -43,9 +61,8 @@ public:
     bool    begin(); // Call all the begin methods and return a boolean to check if something failed
     void    tick(); // This method gets called every 100ms
 
-    void    getAcceleration(Vector3 *a); // Get the acceleration from the MPU module
-    void    getGy(Vector3 *gy); // Get the gyroscope data from the MPU module
-    void    getTemperature(float *bmpTemp, float *mpuTemp); // Get the temperatures from the BMP and MPU module
-    void    getAltitude(float *altitude); // Get the altitude from the BMP module
+    void    getGy(Vector3 *a, Vector3 *gy, float *temp);  // Get the data (acceleration, gyroscope and temperature) data from the MPU6050 module
+    void    getMPUTemperature(float *temperature);               // Get the temperature data from the BMP280 module
+    void    getMPUPressure(float *pressure);              // Get the pressure data from the BMP280 module
 };
 #endif

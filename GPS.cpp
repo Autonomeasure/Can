@@ -1,4 +1,18 @@
-#include <Arduino.h>
+/*
+ * CanSat 2020-2021 Team Autonomeasure - Can
+ * Code written by: Joep van Dijk
+ * First mission:
+ *    Our first mission is to be able to land properly, collect data from the BMP280 sensor and send that data to the groundstation at least one time per second. 
+ * 
+ * Second mission:
+ *    Our second mission is to make a sustainable data collection station. 
+ * 
+ * Links:
+ *    GitHub Autonomeasure:           https://github.com/Autonomeasure
+ *    GitHub Can repo:                https://github.com/Autonomeasure/Can
+ *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
+ *    Instagram:                      https://instagram.com/Autonomeasure/
+ */
 #include "GPS.h"
 
 GPS::GPS(uint8_t rx_pin, uint8_t tx_pin) {

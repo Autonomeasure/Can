@@ -17,10 +17,11 @@
 #ifndef _ADAFRUIT_MPU6050_H
 #define _ADAFRUIT_MPU6050_H
 
-#include "Arduino.h"
-#include <Adafruit_BusIO_Register.h>
-#include <Adafruit_I2CDevice.h>
-#include <Adafruit_Sensor.h>
+// #include "Arduino.h"
+#include <Arduino.h>
+#include "Adafruit_BusIO_Register.h"
+#include "Adafruit_I2CDevice.h"
+#include "Adafruit_Sensor.h"
 #include <Wire.h>
 
 #define MPU6050_I2CADDR_DEFAULT                                                \
