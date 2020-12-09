@@ -1,4 +1,4 @@
-/*
+  /*
  * CanSat 2020-2021 Team Autonomeasure - Can
  * Code written by: Joep van Dijk
  * First mission:
@@ -14,13 +14,21 @@
  *    Instagram:                      https://instagram.com/Autonomeasure/
  */
  
-#include "Adafruit_BMP280.h"
+#include "Can.h"
+
+Can can(1023.15, 28, 30, NULL, NULL);
 
 void setup() {
-	Serial.begin(9600);
-	Adafruit_BMP280 bmp;
+  pinMode(38, OUTPUT);
+  digitalWrite(38, HIGH);
+    Serial.begin(9600);
+  if (!can.begin()) {
+    Serial.println("Something went wrong"); 
+  }
+  can.configureRadio();
 }
 
 void loop() {
-	float temp = bmp.readTemperature();
+  can.tick();
+  delay(333);
 }

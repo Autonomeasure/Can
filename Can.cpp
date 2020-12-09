@@ -17,7 +17,7 @@
 
 Can::Can(float seaLevelhPa, uint8_t radio_rx, uint8_t radio_tx, uint8_t gps_rx, uint8_t gps_tx) {
   radio = new SoftwareSerial(radio_rx, radio_tx);
-  bmp = new Adafruit_BMP280(seaLevelhPa);
+  bmp = new Adafruit_BMP280();
   mpu = new Adafruit_MPU6050();
   mpu->setAccelerometerRange(MPU6050_RANGE_16_G);
   mpu->setGyroRange(MPU6050_RANGE_250_DEG);
@@ -29,8 +29,34 @@ bool Can::begin() {
     radio->begin(9600);
     bool m = mpu->begin();
     bool b = bmp->begin();
+    Serial.print("m: ");
+    Serial.println(m);
+    Serial.print("b: ");
+    Serial.println(b); 
     return b && m;
 }
+
+// Configure the APC220 module to the right settings
+void Can::configureRadio() {
+  // The APC220 setPin is D38
+  pinMode(38, OUTPUT);
+  digitalWrite(38, LOW); // Set the APC220 in config mode
+  delay(50);
+
+  // Frequency: 434000 kHz
+  // Air rate is 2400 bps = 1
+  // Output power = 4
+  // UART baudrate = 3
+  // Byte check parity = 0
+
+  radio->print("WR 434000 1 4 3 0");
+  radio->write(0x0D);
+  radio->write(0x0A);
+  delay(10);
+
+  digitalWrite(38, HIGH); // Set the APC220 in "production" mode
+}
+
 
 // This method gets called every 100ms (at least)
 void Can::tick() {
@@ -39,6 +65,30 @@ void Can::tick() {
     // Check if parachutes need to be deployed
     // Check if parachutes are deployed successful if needed
     // Check if we have landed yet
+
+    float mpuTemp, bmpTemp, pressure;
+    getBMPPressure(&pressure);
+    getBMPTemperature(&bmpTemp);
+
+    Vector3 a, g;
+
+    getGy(&a, &g, &mpuTemp);
+
+    String msg;
+    msg += "id="; msg += id; msg += ";";
+    msg += "p="; msg += pressure; msg += ";";
+    msg += "tb="; msg += bmpTemp; msg += ";";
+    msg += "tm="; msg += mpuTemp; msg += ";";
+    msg += "ax="; msg += a.x; msg += ";";
+    msg += "ay="; msg += a.y; msg += ";";
+    msg += "az="; msg += a.z; msg += ";";
+    msg += "gx="; msg += g.x * (180 / PI); msg += ";";
+    msg += "gy="; msg += g.y * (180 / PI); msg += ";";
+    msg += "gz="; msg += g.z * (180 / PI); msg += ";";
+    radio->println(msg);
+   Serial.println(msg);
+    id++;
+    
 }
 
 // Set the state of the Can::STATE variable and set it in the EEPROM memory
@@ -81,13 +131,13 @@ void Can::getGy(Vector3 *a, Vector3 *gy, float *temp) {
 }
 
 // Get the temperature data from the BMP280 module
-void Can::getMPUTemperature(float *temperature) {
+void Can::getBMPTemperature(float *temperature) {
   float temp = bmp->readTemperature();
-  temperature = &temp;  
+  *temperature = temp;  
 }
 
 // Get the pressure data from the BMP280 module
-void Can::getMPUPressure(float *pressure) {
-  float press = bmp->readPressure();
-  pressure = &press;
+void Can::getBMPPressure(float *pressure) {
+  float p = bmp->readPressure();
+    *pressure = p;
 }

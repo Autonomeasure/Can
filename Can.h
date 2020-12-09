@@ -27,6 +27,7 @@
 #define STATE_ADDRESS 0
 
 #include "Vector3.h"
+#include "Adafruit_Sensor.h"
 #include "Adafruit_BMP280.h"
 #include "Adafruit_MPU6050.h"
 
@@ -47,10 +48,10 @@ private:
     // 00000101 (5): Flight in progress, parachute deployed succesfully
     // 00000110 (6): Landing successful
     uint8_t STATE;
+    unsigned long    id;
 
 public:
     Can(float seaLevelhPa, uint8_t radio_rx, uint8_t radio_tx, uint8_t gps_rx, uint8_t gps_tx);
-    ~Can();
 
     SoftwareSerial *radio;
 
@@ -59,10 +60,11 @@ public:
     bool    setState(uint8_t state); // Set the state of the Can::STATE variable and set it in the EEPROM memory
     uint8_t getState(); // Get Can::STATE and get it from EEPROM memory if necessary
     bool    begin(); // Call all the begin methods and return a boolean to check if something failed
+    void    configureRadio(); // Configure the APC220 module to the right settings
     void    tick(); // This method gets called every 100ms
 
     void    getGy(Vector3 *a, Vector3 *gy, float *temp);  // Get the data (acceleration, gyroscope and temperature) data from the MPU6050 module
-    void    getMPUTemperature(float *temperature);               // Get the temperature data from the BMP280 module
-    void    getMPUPressure(float *pressure);              // Get the pressure data from the BMP280 module
+    void    getBMPPressure(float *pressure);              // Get the pressure data from the BMP280 module
+    void    getBMPTemperature(float *temperature);        // Get the temperature data from the MPU6050 module
 };
 #endif
