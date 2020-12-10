@@ -25,10 +25,10 @@ void setup() {
   if (!can.begin()) {
     Serial.println("Something went wrong"); 
   }
-  can.configureRadio();
+//  can.configureRadio();
 }
 
 void loop() {
   can.tick();
-  delay(333);
+  delay(500);
 }

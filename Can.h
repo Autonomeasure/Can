@@ -48,7 +48,7 @@ private:
     // 00000101 (5): Flight in progress, parachute deployed succesfully
     // 00000110 (6): Landing successful
     uint8_t STATE;
-    unsigned long    id;
+    unsigned int    id;
 
 public:
     Can(float seaLevelhPa, uint8_t radio_rx, uint8_t radio_tx, uint8_t gps_rx, uint8_t gps_tx);

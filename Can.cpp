@@ -74,20 +74,53 @@ void Can::tick() {
 
     getGy(&a, &g, &mpuTemp);
 
-    String msg;
-    msg += "id="; msg += id; msg += ";";
-    msg += "p="; msg += pressure; msg += ";";
-    msg += "tb="; msg += bmpTemp; msg += ";";
-    msg += "tm="; msg += mpuTemp; msg += ";";
-    msg += "ax="; msg += a.x; msg += ";";
-    msg += "ay="; msg += a.y; msg += ";";
-    msg += "az="; msg += a.z; msg += ";";
-    msg += "gx="; msg += g.x * (180 / PI); msg += ";";
-    msg += "gy="; msg += g.y * (180 / PI); msg += ";";
-    msg += "gz="; msg += g.z * (180 / PI); msg += ";";
-    radio->println(msg);
-   Serial.println(msg);
+    radio->print(id);
+    radio->print(';');
+    radio->print(int(bmpTemp * 100));
+    radio->print(';');
+    radio->print(int(mpuTemp * 100));
+    radio->print(';');
+    radio->print(pressure / 100); // Convert it to hPa
+    radio->print(';');
+    radio->print(0.000f);
+    radio->print(';');
+    radio->print(0.000f);
+    radio->print(';');
+    radio->print(0.000f);
+    radio->print(';');
+    radio->print(0);
+    radio->print(';');
+    radio->print(int((g.x * (180 / PI)) * 100));
+    radio->print(';');
+    radio->print(int((g.y * (180 / PI)) * 100));
+    radio->print(';');
+    radio->print(int((g.z * (180 / PI)) * 100));
+    radio->print(';');
+    radio->print(int((a.x * (180 / PI)) * 100));
+    radio->print(';');
+    radio->print(int((a.y * (180 / PI)) * 100));
+    radio->print(';');
+    radio->print(int((a.z * (180 / PI)) * 100));
+    radio->print(';');
+    radio->print("AAA");
+    radio->println(";");
+
+    Serial.println(id);
     id++;
+
+//    String msg;
+//    msg += "id="; msg += id; msg += ";";
+//    msg += "p="; msg += pressure; msg += ";";
+//    msg += "tb="; msg += bmpTemp; msg += ";";
+//    msg += "tm="; msg += mpuTemp; msg += ";";
+//    msg += "ax="; msg += a.x; msg += ";";
+//    msg += "ay="; msg += a.y; msg += ";";
+//    msg += "az="; msg += a.z; msg += ";";
+//    msg += "gx="; msg += g.x * (180 / PI); msg += ";";
+//    msg += "gy="; msg += g.y * (180 / PI); msg += ";";
+//    msg += "gz="; msg += g.z * (180 / PI); msg += ";";
+//    radio->println(msg);
+//    Serial.println(msg);
     
 }
 
