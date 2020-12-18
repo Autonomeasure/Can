@@ -1,4 +1,4 @@
-  /*
+/*
  * CanSat 2020-2021 Team Autonomeasure - Can
  * Code written by: Joep van Dijk
  * First mission:
@@ -19,13 +19,13 @@
 Can can(1023.15, 28, 30, NULL, NULL);
 
 void setup() {
-  pinMode(38, OUTPUT);
-  digitalWrite(38, HIGH);
+//  pinMode(38, OUTPUT);
+//  digitalWrite(38, HIGH);
     Serial.begin(9600);
   if (!can.begin()) {
     Serial.println("Something went wrong"); 
   }
-//  can.configureRadio();
+  can.configureRadio();
 }
 
 void loop() {

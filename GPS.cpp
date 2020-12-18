@@ -30,7 +30,7 @@ void GPS::read() {
   }
 }
 
-// Get the time and put it in the char array, format: HHMMSSmm (length = 8)
+// Get the time and put it in the char array, format: HHMMSSmm (length = 4 bytes)
 char *GPS::get_time() {
   byte hour, minute, second, hundredths;
   unsigned long age;
@@ -38,8 +38,12 @@ char *GPS::get_time() {
   if (age == TinyGPS::GPS_INVALID_AGE) {
     return NULL;
   } else {
-    char *ret;
-    sprintf(ret, "%02d%02d%02d%02d", hour, minute, second, hundredths);
+    char ret[4];
+    ret[0] = hour;
+    ret[1] = minute;
+    ret[2] = second;
+    ret[3] = hundredths;
+//    sprintf(ret, "%02d%02d%02d%02d", hour, minute, second, hundredths);
     return ret;
   }
 }

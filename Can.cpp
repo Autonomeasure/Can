@@ -49,7 +49,7 @@ void Can::configureRadio() {
   // UART baudrate = 3
   // Byte check parity = 0
 
-  radio->print("WR 434000 1 4 3 0");
+  radio->print("w 434000 1 4 3 0");
   radio->write(0x0D);
   radio->write(0x0A);
   delay(10);
@@ -102,7 +102,7 @@ void Can::tick() {
     radio->print(';');
     radio->print(int((a.z * (180 / PI)) * 100));
     radio->print(';');
-    radio->print("AAA");
+    radio->print("AAAA");
     radio->println(";");
 
     Serial.println(id);
