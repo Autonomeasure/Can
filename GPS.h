@@ -15,24 +15,23 @@
  */
 #if !defined(GPS_H)
 #define GPS_H
-#include <SoftwareSerial.h>
-#include "TinyGPS.h"
+#include "TinyGPS++.h"
 
 class GPS {
-private:
-  SoftwareSerial *gpsSerial;
+	private:
+		HardwareSerial 	*gpsSerial;
+		TinyGPSPlus			 gps;
 
-public:
-  GPS(uint8_t rx_pin, uint8_t tx_pin);
+	public:
+		GPS(HardwareSerial *gpsSerial); // The constructor
 
-  TinyGPS *gps;
-
-  void  read();                                 // Read gpsSerial and encode it (using gps.encode)
-  char  *get_time();                            // Get the time and put it in the char array, format: HHMMSSmm (length = 4 bytes)
-  void  get_position(float *flat, float *flon); // Get the current location of the can
-  float get_altitude();                         // Get the current altitude
-  float get_velocity();                         // Get the current velocity in m/s
-
-  bool  begin(uint8_t baudrate = 9600);
+		void begin(uint8_t baudrate = 9600); 					// Call the begin function and set the UART baudrate
+		void read(); 																	// Read gpsSerial and encode it using gps.encode
+		bool get_time(char *hMsm); 										// Get the current time (hMsm (four chars)
+		bool get_position(double *lat, double *lon); 	// Get the current location of the Can
+		bool get_altitude(double *altitude); 					// Get the current altitude in meters
+		bool get_ground_speed(double *speed); 				// Get the current ground speed in m/s
+		bool get_air_speed(double *speed);						// Get the current air speed in m/s
 };
+
 #endif

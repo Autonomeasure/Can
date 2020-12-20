@@ -13,31 +13,26 @@
  *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
  *    Instagram:                      https://instagram.com/Autonomeasure/
  */
-#if !defined(SDCARD_H)
-#define SDCARD_H
-#include <Arduino.h>
-#include <SD.h>
+#if !defined(GPS_H)
+#define GPS_H
+#include <SoftwareSerial.h>
+#include "TinyGPS.h"
 
-class SDCard {
+class GPS {
 private:
-  File radio_log_file; // Log every radio message to this file
+  SoftwareSerial *gpsSerial;
 
 public:
-  SDCard();
+  GPS(uint8_t rx_pin, uint8_t tx_pin);
 
-  File test;
-  
-  String test_buffer;
-  String radio_log_buffer;
+  TinyGPS *gps;
 
-  bool begin(); // Call the SD.begin method and return
+  void  read();                                 // Read gpsSerial and encode it (using gps.encode)
+  char  *get_time();                            // Get the time and put it in the char array, format: HHMMSSmm (length = 4 bytes)
+  void  get_position(float *flat, float *flon); // Get the current location of the can
+  float get_altitude();                         // Get the current altitude
+  float get_velocity();                         // Get the current velocity in m/s
 
-  bool open_radio_log_file(); // Open the SDCard::radio_log_file File
-  bool open_test_file();      // Open the SDCard::test File
-
-  void write_to_test();
-  
-  void tick(); // Check if we can write enough to clear the whole buffer and if so write the buffer to the file and clear the buffer
+  bool  begin(uint8_t baudrate = 9600);
 };
-
 #endif

@@ -15,32 +15,38 @@
  */
 #include "Can.h"
 
-Can::Can(float seaLevelhPa, uint8_t radio_rx, uint8_t radio_tx, uint8_t gps_rx, uint8_t gps_tx) {
-  radio = new SoftwareSerial(radio_rx, radio_tx);
-  bmp = new Adafruit_BMP280();
-  mpu = new Adafruit_MPU6050();
-  mpu->setAccelerometerRange(MPU6050_RANGE_16_G);
-  mpu->setGyroRange(MPU6050_RANGE_250_DEG);
-  mpu->setFilterBandwidth(MPU6050_BAND_21_HZ);
+// -============= PUBLIC FUNCTIONS =============-
+// The constructor, sets the radio serial and gps serial port variables. It also sets the radio set pin variable for later use.
+Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin) {
+	// Set all the variables
+	this->radioSerial = radioSerial;
+	this->radioSetPin = radioSetPin;
+
+	// Create the GPS object
+	this->gps = new GPS(gpsSerial);
+
+	// Create the Adafruit_BMP280 object
+	this->bmp = new Adafruit_BMP280();
+
+	// Create the new Adafruit_BMP280 objct
+	this->mpu = new Adafruit_MPU6050();
 }
 
-// Call all the begin methods and return a boolean to check if something failed
-bool Can::begin() {
-    radio->begin(9600);
-    bool m = mpu->begin();
-    bool b = bmp->begin();
-    Serial.print("m: ");
-    Serial.println(m);
-    Serial.print("b: ");
-    Serial.println(b); 
-    return b && m;
+// Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
+bool Can::begin(uint8_t radio_uart_baudrate = 9600, uint8_t gps_uart_baudrate = 9600) {
+	this->radioSerial->begin(radio_uart_baudrate);
+	this->gps->begin(gps_uart_baudrate);
+
+	pinMode(this->radioSetPin, OUTPUT);
+	digitalWrite(this->radioSetPin, HIGH); // Set the radio into "production" mode
+
+	// Call the begin functions of all the modules (BMP280, MPU6050) and return false if an error occurs
+	return bmp->begin() && mpu->begin();
 }
 
 // Configure the APC220 module to the right settings
 void Can::configureRadio() {
-  // The APC220 setPin is D38
-  pinMode(38, OUTPUT);
-  digitalWrite(38, LOW); // Set the APC220 in config mode
+  digitalWrite(this->radioSetPin, LOW); // Set the APC220 in config mode
   delay(50);
 
   // Frequency: 434000 kHz
@@ -49,128 +55,10 @@ void Can::configureRadio() {
   // UART baudrate = 3
   // Byte check parity = 0
 
-  radio->print("w 434000 1 4 3 0");
-  radio->write(0x0D);
-  radio->write(0x0A);
+  this->radioSerial->print("w 434000 1 4 3 0");
+  this->radioSerial->write(0x0D);
+  this->radioSerial->write(0x0A);
   delay(10);
 
-  digitalWrite(38, HIGH); // Set the APC220 in "production" mode
-}
-
-
-// This method gets called every 100ms (at least)
-void Can::tick() {
-    // Read all the sensor values...
-    // Send a radio message with all the data
-    // Check if parachutes need to be deployed
-    // Check if parachutes are deployed successful if needed
-    // Check if we have landed yet
-
-    float mpuTemp, bmpTemp, pressure;
-    getBMPPressure(&pressure);
-    getBMPTemperature(&bmpTemp);
-
-    Vector3 a, g;
-
-    getGy(&a, &g, &mpuTemp);
-
-    radio->print(id);
-    radio->print(';');
-    radio->print(int(bmpTemp * 100));
-    radio->print(';');
-    radio->print(int(mpuTemp * 100));
-    radio->print(';');
-    radio->print(pressure / 100); // Convert it to hPa
-    radio->print(';');
-    radio->print(0.000f);
-    radio->print(';');
-    radio->print(0.000f);
-    radio->print(';');
-    radio->print(0.000f);
-    radio->print(';');
-    radio->print(0);
-    radio->print(';');
-    radio->print(int((g.x * (180 / PI)) * 100));
-    radio->print(';');
-    radio->print(int((g.y * (180 / PI)) * 100));
-    radio->print(';');
-    radio->print(int((g.z * (180 / PI)) * 100));
-    radio->print(';');
-    radio->print(int((a.x * (180 / PI)) * 100));
-    radio->print(';');
-    radio->print(int((a.y * (180 / PI)) * 100));
-    radio->print(';');
-    radio->print(int((a.z * (180 / PI)) * 100));
-    radio->print(';');
-    radio->print("AAAA");
-    radio->println(";");
-
-    Serial.println(id);
-    id++;
-
-//    String msg;
-//    msg += "id="; msg += id; msg += ";";
-//    msg += "p="; msg += pressure; msg += ";";
-//    msg += "tb="; msg += bmpTemp; msg += ";";
-//    msg += "tm="; msg += mpuTemp; msg += ";";
-//    msg += "ax="; msg += a.x; msg += ";";
-//    msg += "ay="; msg += a.y; msg += ";";
-//    msg += "az="; msg += a.z; msg += ";";
-//    msg += "gx="; msg += g.x * (180 / PI); msg += ";";
-//    msg += "gy="; msg += g.y * (180 / PI); msg += ";";
-//    msg += "gz="; msg += g.z * (180 / PI); msg += ";";
-//    radio->println(msg);
-//    Serial.println(msg);
-    
-}
-
-// Set the state of the Can::STATE variable and set it in the EEPROM memory
-bool Can::setState(uint8_t state) {
-    // Check if the new state is lower than the last state (so we're going back??) if so return true
-    if (state < STATE) {
-        STATE = state;
-        return true;
-    }
-    STATE = state;
-    EEPROM.put(STATE_ADDRESS, state);
-    return false;
-}
-
-// Get Can::STATE
-uint8_t Can::getState() {
-    if (STATE == 0b00000000) {
-      // STATE is not set, get it from the EEPROM (and if that is empty set both to 00000001)
-      EEPROM.get(STATE_ADDRESS, STATE);
-      if (STATE == 0b00000000) {
-        // STATE is still equal to 0, set both to 00000001
-        setState(0b0000001);
-      }
-    }
-    return STATE;
-}
-
-// Get the data (acceleration, gyroscope and temperature) data from the MPU6050 module
-void Can::getGy(Vector3 *a, Vector3 *gy, float *temp) {
-  sensors_event_t at, gt, t;
-  mpu->getEvent(&at, &gt, &t);
-
-  a->x = at.acceleration.x;
-  a->y = at.acceleration.y;
-  a->z = at.acceleration.z;
-  gy->x = gt.gyro.x;
-  gy->y = gt.gyro.y;
-  gy->z = gt.gyro.z;
-  *temp = t.temperature;
-}
-
-// Get the temperature data from the BMP280 module
-void Can::getBMPTemperature(float *temperature) {
-  float temp = bmp->readTemperature();
-  *temperature = temp;  
-}
-
-// Get the pressure data from the BMP280 module
-void Can::getBMPPressure(float *pressure) {
-  float p = bmp->readPressure();
-    *pressure = p;
+  digitalWrite(this->radioSetPin, HIGH); // Set the APC220 in "production" mode
 }

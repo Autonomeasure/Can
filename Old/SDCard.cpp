@@ -51,6 +51,47 @@ void SDCard::write_to_test() {
   }
 }
 
+
+// Write to the buffer
+void SDCard::print(char *msg, char *file = "radio_log") {
+  if (file == "radio_log") {
+    radio_log_buffer += String(msg);
+  }
+}
+
+// Write a float to the buffer
+void SDCard::print(float msg, char *file = "radio_log") {
+  if (file == "radio_log") {
+    radio_log_buffer += String(msg);
+  }
+}
+
+// Write an unsigned int to the buffer
+void SDCard::print(unsigned int msg, char *file = "radio_log") {
+  if (file == "radio_log") {
+    radio_log_buffer += String(msg);
+  }
+}
+
+
+// Write an int to the buffer
+void SDCard::print(int msg, char *file = "radio_log") {
+  if (file == "radio_log") {
+    radio_log_buffer += String(msg);
+  }
+}
+
+
+
+// Write to the buffer
+void SDCard::println(char *msg, char *file = "radio_log") {
+  if (file == "radio_log") {
+    radio_log_buffer += String(msg + char("\n\r"));
+  }
+}
+
+
+
 // Check if we can write enough to clear the whole buffer and if so write the buffer to the file and clear the buffer
 void SDCard::tick() {
   unsigned int radio_log_chunk_size = radio_log_file.availableForWrite();
