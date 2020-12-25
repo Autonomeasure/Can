@@ -26,6 +26,10 @@
  * 		1: BMP280 module failure, Adafruit_BMP280::begin returned false
  * 		2: MPU6050 module failure, Adafruit_MPU6050::begin returned false
  * 		3: Incorrect APC220 radio configuration
+ *    4: Invalid GPS time received
+ *    5: Invalid GPS location received
+ *    6: Invalid GPS altitude
+ *    7: Invalid GPS ground speed
  * 
  * 		255: Unknown error
 */

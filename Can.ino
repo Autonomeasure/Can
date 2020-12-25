@@ -1,6 +1,6 @@
 #include "Can.h"
 
-Can can = Can::Can(&Serial1, &Serial2, 38);
+Can can = Can::Can(&Serial1, &Serial2, 38, 3);
 
 // Set the variables for the "delay" without delay()
 unsigned long previousMillis;
@@ -24,9 +24,12 @@ void loop() {
 	if (currentMillis - previousMillis >= interval) {
 		previousMillis = currentMillis; // Set the previousMillis to the current millis for the next run of this loop
 
-		// Logic here
-		if (!can.tick()) { // Run the tick function and check for any errors
-
+		// Tick logic here
+		// Error handling
+		Error *errors;
+		uint8_t amountOfErrors = can.tick(errors); // Call Can::tick and save any errors that occured
+		if (amountOfErrors > 0) {
+			// Error(s) occured
 		}
 	}
 }

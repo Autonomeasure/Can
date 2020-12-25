@@ -16,7 +16,7 @@
 #include "GPS.h"
 
 // -============= PUBLIC FUNCTIONS =============-
-// The constructor
+// The constructor, sets the gps serial object
 GPS::GPS(HardwareSerial *gpsSerial) {
 	// Set GPS.gpsSerial 
 	this->gpsSerial = gpsSerial;
@@ -27,7 +27,7 @@ void GPS::begin(uint8_t baudrate = 9600) {
 	gpsSerial->begin(baudrate);
 }
 
-// Read gpsSerial and encode it using gps.encode
+// Read gpsSerial and encode it using gps::encode
 void GPS::read() {
 	while (gpsSerial->available()) {
 		gps.encode(gpsSerial->read());
@@ -35,50 +35,61 @@ void GPS::read() {
 }
 
 // Get the current time (hMsm (four chars)
-bool GPS::get_time(char *hMsm) {
+uint8_t GPS::get_time(Error *errors, char *time) {
+  uint8_t amountOfErrors;
 	if (!gps.time.isValid()) {
-		return false;
-	}
+    Error err;
+    err.errorID = 4;
+    errors[amountOfErrors] = err;
+    return amountOfErrors;
+  }
 
-	hMsm[0] = gps.time.hour();
-	hMsm[1] = gps.time.minute();
-	hMsm[2] = gps.time.second();
-	hMsm[3] = gps.time.centisecond();
-	return true;
+	time[0] = gps.time.hour();
+	time[1] = gps.time.minute();
+	time[2] = gps.time.second();
+	time[3] = gps.time.centisecond();
+	return amountOfErrors;
 }
 
 // Get the current location of the Can
-bool GPS::get_position(double *lat, double *lon) {
+uint8_t GPS::get_position(Error *errors, double *lat, double *lon) {
+  uint8_t amountOfErrors;
 	if (!gps.location.isValid()) {
-		return false;
+		Error err;
+    err.errorID = 5;
+    errors[amountOfErrors] = err;
+    return amountOfErrors;
 	}
 
 	*lat = gps.location.lat();
 	*lon = gps.location.lng();
-	return true;
+  return amountOfErrors;
 }
 
 // Get the current altitude in meters
-bool GPS::get_altitude(double *altitude) {
+uint8_t GPS::get_altitude(Error *errors, double *altitude) {
+  uint8_t amountOfErrors;
 	if (!gps.altitude.isValid()) {
-		return false;
+		Error err;
+    err.errorID = 6;
+    errors[amountOfErrors] = err;
+    return amountOfErrors;
 	}
 
 	*altitude = gps.altitude.meters();
-	return true;
+  return amountOfErrors;
 }
 
 // Get the current ground speed in m/s
-bool GPS::get_ground_speed(double *speed) {
+uint8_t GPS::get_ground_speed(Error *errors, double *speed) {
+  uint8_t amountOfErrors;
 	if (!gps.speed.isValid()) {
-		return false;
+		Error err;
+    err.errorID = 7;
+    errors[amountOfErrors] = err;
+    return amountOfErrors;
 	}
 
 	*speed = gps.speed.mps();
-	return true;
-}
-
-// Get the current air speed in m/s
-bool GPS::get_air_speed(double *speed) {
-	
+  return amountOfErrors;
 }

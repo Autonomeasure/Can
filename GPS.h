@@ -17,21 +17,84 @@
 #define GPS_H
 #include "TinyGPS++.h"
 
+#include "Error.h"
+
+typedef struct {
+	char *time;
+	double altitude;
+}GPS_Altitude;
+
 class GPS {
 	private:
 		HardwareSerial 	*gpsSerial;
 		TinyGPSPlus			 gps;
 
 	public:
-		GPS(HardwareSerial *gpsSerial); // The constructor
+		/*
+		 * Sets the gpsSerial variable
+		 * 
+		 * @param gpsSerial [HardwareSerial*] A pointer to a hardware serial port that communicates with the GPS module
+		 * 
+		 * @return void
+		*/
+		GPS(HardwareSerial *gpsSerial);
 
-		void begin(uint8_t baudrate = 9600); 					// Call the begin function and set the UART baudrate
-		void read(); 																	// Read gpsSerial and encode it using gps.encode
-		bool get_time(char *hMsm); 										// Get the current time (hMsm (four chars)
-		bool get_position(double *lat, double *lon); 	// Get the current location of the Can
-		bool get_altitude(double *altitude); 					// Get the current altitude in meters
-		bool get_ground_speed(double *speed); 				// Get the current ground speed in m/s
-		bool get_air_speed(double *speed);						// Get the current air speed in m/s
+		/*
+		 * Call the begin function of the gpsSerial object and sets the UART baudrate
+		 * 
+		 * @param baudrate [uint8_t] The baudrate on which the HardwareSerial port connected to the GPS module will function [OPTIONAL, DEFAULT IS 9600 BAUD]
+		 * 
+		 * @return void
+		*/
+		void begin(uint8_t baudrate = 9600);
+
+		/*
+		 * Reads the incoming serial data from the GPS module and encodes it with TinyGPSPlus::encode
+		 * 
+		 * @return void
+		*/
+		void read();
+
+    /*
+     * Get the current time (four chars, hours, minutes, seconds, centiseconds)
+     * 
+     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+     * @param time [char*] A char[] where the time is saved, the array has four elements: hours, minutes, seconds, centiseconds
+     * 
+     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     */
+		uint8_t get_time(Error *errors, char *time);
+
+    /*
+     * Get the current location (latitude and longitude) of the Can
+     * 
+     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+     * @param lat [double*] A pointer to the variable where the latitude is going to be saved
+     * @param lon [double*] A pointer to the variable where the longitude is going to be saved
+     * 
+     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     */
+		uint8_t get_position(Error *errors, double *lat, double *lon);
+
+    /*
+     * Get the current altitude of the Can in meters
+     * 
+     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+     * @param altitude [double*] A pointer to the variable where the altitude of the Can is going to be saved
+     * 
+     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     */
+		uint8_t get_altitude(Error *errors, double *altitude);
+
+    /*
+     * Get the current ground speed of the Can in m/s
+     * 
+     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+     * @param speed [double*] A pointer to the variable where the ground speed of the Can is going to be saved
+     * 
+     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     */
+		uint8_t get_ground_speed(Error *errors, double *speed);
 };
 
 #endif

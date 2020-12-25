@@ -13,7 +13,8 @@
   Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
-#include "Arduino.h"
+// #include "Arduino.h"
+#include <Arduino.h>
 
 #include <Wire.h>
 #include <SPI.h>
