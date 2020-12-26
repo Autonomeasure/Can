@@ -69,6 +69,18 @@ class Can {
      * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
      */
     uint8_t calculate_air_speed(Error *errors, double *air_speed);
+          
+    /*
+     * Calculate the expected amount of time it takes until the Can hits the ground
+     * 
+     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+     * @param altitude [double] The current altitude of the Can in meters
+     * @param air_speed [double] The current air speed (vertical velocity) in m/s
+     * @param exptected_time_until_impact [double*] A pointer to the variable where the expected time until impact should be stored in seconds
+     * 
+     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     */
+    uint8_t calculate_expected_time_until_impact(Error *errors, double altitude, double air_speed, double *exptected_time_until_impact);
 
 	public:
 		/*

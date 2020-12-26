@@ -73,6 +73,13 @@ uint8_t Can::calculate_air_speed(Error *errors, double *air_speed) {
   return amountOfErrors;
 }
 
+// Calculate the expected amount of time it takes until the Can hits the ground
+uint8_t Can::calculate_expected_time_until_impact(Error *errors, double altitude, double air_speed, double *exptected_time_until_impact) {
+  uint8_t amountOfErrors;
+
+  return amountOfErrors;
+}
+
 
 // -============= PUBLIC METHODS =============-
 

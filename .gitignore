@@ -1,3 +1,7 @@
 ./.vscode
 ./Cansat-Can.code-workspace
 ./Old/
+/documentation/**.toc
+/documentation/**.log
+/documentation/**.aux
+/documentation/**.gz

@@ -1,0 +1,48 @@
+\documentclass[a4paper,10pt]{article}
+
+\author{Joep van Dijk}
+\title{CanSat 2020-2021 Can code documentation}
+\date{\today}
+
+\renewcommand{\contentsname}{Table of contents}
+
+\newcommand{\centereditem}[1]{\item \begin{center} #1 \end{center}}
+
+\newcommand{\isqc}{$I^2C$}
+
+
+\begin{document}
+	\maketitle
+	
+	\clearpage
+	
+	\tableofcontents
+	
+	\clearpage
+	
+	
+	
+	\section[Can]{Can overview}
+		\subsection[Modules]{Modules and sensors in the Can}
+			The micro controller in the Can is an Arduino Mega 2560. There are a few modules/sensors that will be connected to the Arduino. 
+			\begin{itemize}
+				\item The APC220 radio module, it is used to transmit and receive data. 
+				\item The Adafruit BMP280 module, it measures the temperature and pressure. 
+				\item The Adafruit MPU6050 module, it is an accelerometer and gyroscope, it also measures the temperature. 
+				\item The NEO-6M GPS module which receives GPS data. 
+				\item The HW-125 SD card module, it is used to save all the radio transmissions (and maybe some additional data). 
+			\end{itemize}
+			
+			\vspace{1ex}
+			
+			\subsubsection[APC220]{The APC220 radio tranceiver module}
+				The APC220 radio tranceiver module will be connected to the rx1 and tx1 serial pins. 
+			
+			\vspace{1ex}
+			
+			\subsubsection[BMP280]{The Adafruit BMP280 module}
+				The BMP280 module is connected to the \isqc pins on the Arduino. The Adafruit BMP280 library\footnote{Adafruit BMP280 library: https://github.com/adafruit/Adafruit\_BMP280\_Library} uses the \isqc protocol to communicate with the BMP280 module. 
+	
+	
+	
+\end{document}
