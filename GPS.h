@@ -51,9 +51,11 @@ class GPS {
 		/*
 		 * Reads the incoming serial data from the GPS module and encodes it with TinyGPSPlus::encode
 		 * 
+     * @param void
+     * 
 		 * @return void
 		*/
-		void read();
+		void read(void);
 
     /*
      * Get the current time (four chars, hours, minutes, seconds, centiseconds)
@@ -86,15 +88,15 @@ class GPS {
      */
 		uint8_t get_altitude(Error *errors, double *altitude);
 
-    /*
-     * Get the current ground speed of the Can in m/s
-     * 
-     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
-     * @param speed [double*] A pointer to the variable where the ground speed of the Can is going to be saved
-     * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
-     */
-		uint8_t get_ground_speed(Error *errors, double *speed);
+//    /*
+//     * Get the current ground speed of the Can in m/s
+//     * 
+//     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+//     * @param speed [double*] A pointer to the variable where the ground speed of the Can is going to be saved
+//     * 
+//     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+//     */
+//		uint8_t get_ground_speed(Error *errors, double *speed);
 };
 
 #endif

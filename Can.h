@@ -31,6 +31,8 @@
 
 #include "GPS.h"
 
+#include "Vector3.h"
+
 #include "Error.h"
 
 #define EEPROM_LAST_SENT_PACKET_ID_OFFSET (0) // The last packet ID that has been sent
@@ -97,9 +99,12 @@ class Can {
 		 */
 		Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond);
 
-		HardwareSerial *radioSerial; 	// A pointer to the hardware serial port that communicates with the radio module (APC220)
-		Adafruit_BMP280 *bmp; 				// The Adafruit_BMP280 object to communicate with the BMP280 module
-		Adafruit_MPU6050 *mpu; 				// The Adafruit_MPU6050 object to communicate with the MPU6050 module
+    // A pointer to the hardware serial port that communicates with the radio module (APC220)
+		HardwareSerial *radioSerial;
+    // The Adafruit_BMP280 object to communicate with the BMP280 module
+		Adafruit_BMP280 *bmp;
+    // The Adafruit_MPU6050 object to communicate with the MPU6050 module
+		Adafruit_MPU6050 *mpu;
 
 		/*
 		 * Begins all the serial ports and modules. 
@@ -141,9 +146,7 @@ class Can {
 		 * 
 		 * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
 		*/
-		uint8_t tick(Error *errors); // This method will gather all the data from modules and save it to the SD card and send it to the radio
-		bool get_air_speed(double *speed);						// Get the current air speed in m/s
-
+		uint8_t tick(Error *errors);
 };
 
 #endif

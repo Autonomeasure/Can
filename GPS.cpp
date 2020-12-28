@@ -80,16 +80,16 @@ uint8_t GPS::get_altitude(Error *errors, double *altitude) {
   return amountOfErrors;
 }
 
-// Get the current ground speed in m/s
-uint8_t GPS::get_ground_speed(Error *errors, double *speed) {
-  uint8_t amountOfErrors;
-	if (!gps.speed.isValid()) {
-		Error err;
-    err.errorID = 7;
-    errors[amountOfErrors] = err;
-    return amountOfErrors;
-	}
-
-	*speed = gps.speed.mps();
-  return amountOfErrors;
-}
+//// Get the current ground speed in m/s
+//uint8_t GPS::get_ground_speed(Error *errors, double *speed) {
+//  uint8_t amountOfErrors;
+//	if (!gps.speed.isValid()) {
+//		Error err;
+//    err.errorID = 7;
+//    errors[amountOfErrors] = err;
+//    return amountOfErrors;
+//	}
+//
+//	*speed = gps.speed.mps();
+//  return amountOfErrors;
+//}

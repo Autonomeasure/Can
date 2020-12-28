@@ -1,18 +1,56 @@
 \documentclass[a4paper,10pt]{article}
 
+\usepackage{graphicx}
+
 \author{Joep van Dijk}
-\title{CanSat 2020-2021 Can code documentation}
+\title{CanSat 2020-2021 | Team Autonomeasure | Can code documentation}
 \date{\today}
 
 \renewcommand{\contentsname}{Table of contents}
 
 \newcommand{\centereditem}[1]{\item \begin{center} #1 \end{center}}
 
+\newcommand{\errorsarg}{\item \texttt{errors} is a pointer to an \texttt{Error} object, all the errors that occur will be saved to this pointer}
+\newcommand{\amountoferrorsret}{\texttt{uint8\_t} - The amount of errors that occurred. }
+
 \newcommand{\isqc}{$I^2C$}
 
+\newcommand{\func}[1]{\texttt{#1}}
+
+\newenvironment{method}[2]{%
+	\newcommand\funname{\func{#1}}
+	\subsubsection[#1]{#2}
+	
+	% Arguments environment
+	\newenvironment{methodargs}{%
+		\subsubsection*{Arguments}
+	}{}
+	
+	% Returns environment
+	\newenvironment{methodreturns}{%
+		\subsubsection*{Returns}
+	}{}
+	
+	% `Description' environment
+	\newenvironment{methoddesc}{%
+		\subsubsection*{Description}
+	}{}
+
+	% Scope environment
+	\newenvironment{methodscope}{
+		\subsubsection*{Scope}
+	}{}
+}{}
 
 \begin{document}
 	\maketitle
+	
+	%\includegraphics{CanSat_logo}
+	
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[width=100mm]{CanSat_logo}
+	\end{figure}
 	
 	\clearpage
 	
@@ -42,7 +80,240 @@
 			
 			\subsubsection[BMP280]{The Adafruit BMP280 module}
 				The BMP280 module is connected to the \isqc pins on the Arduino. The Adafruit BMP280 library\footnote{Adafruit BMP280 library: https://github.com/adafruit/Adafruit\_BMP280\_Library} uses the \isqc protocol to communicate with the BMP280 module. 
+				
+				\vspace{1ex}
+			
+			\subsubsection[MPU6050]{The Adafruit MPU6050 module}
+				The MPU6050 module is connected to the \isqc pins on the Arduino. The Adafruit MPU6050 library\footnote{Adafruit MPU6050 library: https://github.com/adafruit/Adafruit\_MPU6050\_Library} uses the \isqc protocol to communicate with the MPU6050 module. 
+				
+				\vspace{1ex}
+				
+			\subsubsection[NEO-6M]{The NEO-6M GPS module}
+				The NEO-6M GPS module is connected with the rx2 and tx2 serial pins. \\
+				Because the NEO-6M does not handle 5V well a simple voltage level converter so the 5V signal from the Arduino is converted to a 3.3V signal before it reaches the GPS module. 
+%					\begin{circuitikz}[european, scale=1] \draw
+%						(0,0) to [voltage source, v=$\underline{U}_{in}$] (0, 4)
+%						to[resistor, l=1k] (4, 4) -- (4,0)
+%						(4,0) to [voltage source, v<=$\underline{U}_{out}$] (4, 4)
+%						(4, 4) to [resistor, l=1k] (4, -4)
+%						(4, -4) to [resistor, l=1k] (4, 0)
+%						(4, 0) to[pground] (4, -4)
+%						
+%						%(4, 4) to[ground] (0, -4)
+%						;
+%					\end{circuitikz}
+
+				\vspace{1ex}
+				
+				\subsubsection[HW-125]{The HW-125 SD card module}
+					The HW-125 SD card module is connected with the \texttt{SPI} pins, on the Arduino Mega that are the pins: \texttt{D50}, \texttt{D51} and \texttt{D52}. 
+					The default \texttt{SD} library is used to communicate with the module. All the radio transmissions will be saved on the SD card so if any of the radio transmissions fail we can retrieve them later. 
+	
+		
+	\clearpage
+	
+	\section[Structs]{All the custom structures}
+		\subsection{Error}
+			The Error structure contains information about the error that has occurred. 
+			The property \texttt{errorID} is a \texttt{uint8\_t} that contains the identifier of the error. All the possible identifiers are:
+				\begin{enumerate}
+					\item An error occurred while initializing the BMP280 module, \texttt{Adafruit\_BMP280::begin} returned \emph{false}. 
+					\item An error occurred while initializing the MPU6050 module, \texttt{Adafruit\_MPU6050::begin} returned \emph{false}. 
+					\item The APC220 was not configured correctly. 
+					\item An invalid GPS time was received. 
+					\item An invalid GPS location (latitude and longitude) was received. 
+					\item An invalid GPS altitude was received. 
+					\item[255.] An unknown error has occurred. 
+				\end{enumerate}
+		
+		\vspace{1ex}
+		
+		\subsection{Vector3}
+			The Vector3 structure is a vector with three axis (x, y and z). All the properties have the type \texttt{float}. 
+	
+	\clearpage
 	
 	
 	
+	
+	
+	\section[Classes]{All the custom classes}
+		\subsection{GPS}
+			The GPS class contains some methods that do calculations (e.g. a method to calculate the vertical velocity). 
+			
+			\begin{method}{GPS}{void GPS::GPS(HardwareSerial *gpsSerial)}
+				
+				\begin{methodargs}
+					\begin{itemize}
+						\item \texttt{gpsSerial} is a pointer to a \texttt{HardwareSerial} object (e.g. \texttt{Serial2}) used to communicate with the GPS module. 
+					\end{itemize}
+				\end{methodargs}
+				
+				\begin{methodreturns}
+					\texttt{void}
+				\end{methodreturns}
+				
+				\begin{methoddesc}
+					This is the constructor of the class. It sets the \texttt{gpsSerial} variable. 
+				\end{methoddesc}
+				
+				\begin{methodscope}
+					\texttt{PUBLIC}
+				\end{methodscope}
+				
+				\vspace{3ex}
+			\end{method}
+		
+			\begin{method}{begin}{void GPS::begin(uint8\_t baudrate = 9600)}
+				\begin{methodargs}
+					\begin{itemize}
+						\item \texttt{baudrate} is an \texttt{uint8\_t} and holds the baudrate that is going to be used for the serial connection with the GPS module. The default value is \texttt{9600}. 
+					\end{itemize}
+				\end{methodargs}
+			
+				\begin{methodreturns}
+					\texttt{void}
+				\end{methodreturns}
+			
+				\begin{methoddesc}
+					Call the begin function of the \texttt{gpsSerial} object and sets the UART baudrate. 
+				\end{methoddesc}
+			
+				\begin{methodscope}
+					\texttt{PUBLIC}
+				\end{methodscope}
+			\end{method}
+			
+			\begin{method}{read}{void GPS::read(void)}
+				\begin{methodargs}
+					\begin{itemize}
+							\item void
+						\end{itemize}
+				\end{methodargs}
+				
+				\begin{methodreturns}
+					\texttt{void}
+				\end{methodreturns}
+				
+				\begin{methoddesc}
+					Read the incoming serial data from the GPS module and encodes it with \texttt{TinyGPSPlus::encode}. 
+				\end{methoddesc}
+				
+				\begin{methodscope}
+					\texttt{PUBLIC}
+				\end{methodscope}
+				
+				\vspace{3ex}
+			\end{method}
+		
+			\begin{method}{get\_time}{uint8\_t GPS::get\_time(Error *errors, char *time)}
+				\begin{methodargs}
+					\begin{itemize}
+						\errorsarg
+						\item \texttt{time} is a pointer to a \texttt{char} array with four elements containing the time. 
+					\end{itemize}
+				\end{methodargs}
+				
+				\begin{methodreturns}
+					\amountoferrorsret
+				\end{methodreturns}
+			
+				\begin{methoddesc}
+					Get the current time and save it to the \texttt{time} array. \\ 
+					The first element will contain the hour (0-23), the second element will the minutes (0-59), the third element will contain the seconds (0-59) and the fourth element will contain the centiseconds (0-99). 
+				\end{methoddesc}
+			
+				\begin{methodscope}
+					\texttt{PUBLIC}
+				\end{methodscope}
+			\end{method}
+		
+			\begin{method}{get\_position}{uint8\_t GPS::get\_position(Error *errors, double *lat, double *lon)}
+				\begin{methodargs}
+					\begin{itemize}
+						\errorsarg
+						\item \texttt{lat} is a pointer to a \texttt{double} where the latitude of the Can will be stored. 
+						\item \texttt{lon} is a pointer to a \texttt{double} where the longitude of the Can will be stored. 
+					\end{itemize}
+				\end{methodargs}
+			
+				\begin{methodreturns}
+					\amountoferrorsret
+				\end{methodreturns}
+			
+				\begin{methoddesc}
+					This method will get the current location (latitude and longitude) of the Can and save it to the \texttt{lat} and \texttt{lon} pointers. 
+				\end{methoddesc}
+			
+				\begin{methodscope}
+					\texttt{PUBLIC}
+				\end{methodscope}
+			\end{method}
+		
+			\begin{method}{get\_altitude}{uint8\_t GPS::get\_altitude(Error *errors, double *altitude)}
+				\begin{methodargs}
+					\begin{itemize}
+						\errorsarg
+						\item \texttt{altitude} is a pointer to a \texttt{double} where the altitude of the Can will be stored. 
+					\end{itemize}
+				\end{methodargs}
+		
+				\begin{methodreturns}
+					\amountoferrorsret
+				\end{methodreturns}
+				
+				\begin{methoddesc}
+					This method will get the current altitude of the Can and save it to the \texttt{altitude} pointer. 
+				\end{methoddesc}
+			
+				\begin{methodscope}
+					\texttt{PUBLIC}
+				\end{methodscope}
+			\end{method}
+			
+			
+			\vspace{3ex}
+	
+		\subsection{Can}
+			The Can class contains all the methods and properties needed to do measurements and calculations. 
+			
+			\subsubsection[Can]{void Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8\_t ticksPerSecond)}
+				\subsubsection*{Parameters}
+					\begin{itemize}
+						\item \texttt{radioSerial} is a pointer to a \texttt{HardwareSerial} object (e.g. \texttt{Serial1}) used to communicate with the APC220 radio module. 
+						\item \texttt{gpsSerial} is a pointer to a \texttt{HardwareSerial} object (e.g. \texttt{Serial2}) used to communicate with the GPS module. 
+						\item \texttt{radioSetPin} is an \texttt{int} which holds the pin where the SET pin of the APC220 radio module is connected to. 
+						\item \texttt{tickPerSecond} is an \texttt{uint8\_t} which tells how many times per second the \texttt{Can::tick} method gets called. 
+					\end{itemize}
+				
+				\subsubsection*{Returns}
+					\texttt{void}
+					
+				\subsubsection*{Description}
+					This is the constructor of the class. All the needed instances are created here (\texttt{Adafruit\_BMP280}, \texttt{Adafruit\_MPU6050} and \texttt{GPS}) and some variables are set (\texttt{Can::radioSerial}, \texttt{Can::radioSetPin} and \texttt{Can::ticksPerSecond})
+				
+				\subsubsection*{Scope}
+					\texttt{Public}
+				
+				
+				
+				\vspace{2ex}
+			
+			
+			
+			\subsubsection[tick]{uint8\_t Can::tick(Error *errors)}
+				\subsubsection*{Parameters}
+					\begin{itemize}
+						\item \texttt{errors} is a pointer to an \texttt{Error} object, all the errors that occur will be saved to this pointer
+					\end{itemize}
+				
+				\subsubsection*{Returns}
+					\texttt{uint8\_t} - 
+					The amount of errors that occurred.
+			
+				\subsubsection*{Description}
+					The tick method will gather all the data from the modules. The gathered data will then be transmitted to the ground station and saved to the SD card that is installed on board. 
+				
+				\subsubsection*{Scope}
+					\texttt{Public}
 \end{document}

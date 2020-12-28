@@ -129,11 +129,11 @@ void Can::configureRadio() {
   digitalWrite(this->radioSetPin, LOW);
   delay(50);
 
-  // Frequency is 434000 kHz = 434000
-  // Air rate is 2400 bps = 1
-  // Output power = 4
-  // UART baudrate = 3
-  // Byte check parity = 0
+  // Frequency is 434000 kHz = 434000. 
+  // Air rate is 2400 bps = 1. 
+  // Output power = 4. 
+  // UART baudrate = 3. 
+  // Byte check parity = 0. 
 
   this->radioSerial->print("w 434000 1 4 3 0");
   this->radioSerial->write(0x0D);
@@ -183,21 +183,41 @@ uint8_t Can::tick(Error *errors) {
 	gps->read();
   Error *errs1;
   Error *errs2;
+  Error *errs3;
 	uint8_t amountOfErrors1 = gps->get_time(errs1, alt.time); // TODO add error handling
 	uint8_t amountOfErrors2 = gps->get_altitude(errs2, &alt.altitude); // TODO add error handling
+
+  double lat, lon;
+
+  uint8_t amountOfErrors3 = gps->get_position(errs3, &lat, &lon);
+ 
+  float bmpTemperature = this->bmp->readTemperature();
+  float pressure = this->bmp->readPressure();
+  Vector3 acceleration;
+  Vector3 gyroscope;
+  float mpuTemperature;
+  sensors_event_t a, g, temp;
+  bool mpuData = this->mpu->getEvent(&a, &g, &temp);
+
+  if (!mpuData) {
+    // TODO add error handling
+  }
+
+  acceleration.x = a.acceleration.x;
+  acceleration.y = a.acceleration.y;
+  acceleration.z = a.acceleration.z;
+
+  gyroscope.x = a.gyro.x;
+  gyroscope.y = a.gyro.y;
+  gyroscope.z = a.gyro.z;
+
+  mpuTemperature = temp.temperature;
+
+  // Transmit all the data to the groundstation
 	
 	// Check if the time and altitude should be saved
 	if (this->lastPacketID % this->ticksPerSecond == 0) {
 		// Yep, the time and altitude should be saved
 		amountOfErrors += save_altitude_time_to_eeprom(errors, alt.time, alt.altitude);
-	}
-}
-
-// Get the current air speed in m/s
-bool Can::get_air_speed(double *speed) {
-	for (uint8_t i = 0; i < 10; i++) {
-		uint8_t cursor = (i + gps_altitude_time_cursor) % 10;
-		GPS_Altitude alt;
-		// EEPROM.read(EEPROM_GPS_ALTITUDE_TIME_OFFSET + (sizeof(GPS_Altitude) * cursor), alt);
 	}
 }
