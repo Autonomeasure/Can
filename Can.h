@@ -84,6 +84,15 @@ class Can {
      */
     uint8_t calculate_expected_time_until_impact(Error *errors, double altitude, double air_speed, double *exptected_time_until_impact);
 
+    /*
+     * Save the radio transmission to the SD card
+     * 
+     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
+     * 
+     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     */
+    uint8_t save_radio_transmission_to_sd(Error *errors);
+
 	public:
 		/*
 		 * Sets the radioSerial variable. 
