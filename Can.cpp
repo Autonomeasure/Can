@@ -101,10 +101,10 @@ Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
-uint8_t Can::begin(Error *errors, uint8_t radio_uart_baudrate = 4800, uint8_t gps_uart_baudrate = 9600) {
+uint8_t Can::begin(Error *errors, uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5) {
 	uint8_t amountOfErrors;
 	this->radioSerial->begin(radio_uart_baudrate);
-	this->gps->begin(gps_uart_baudrate);
+	this->gps->begin(gps_update_frequency);
 
 	pinMode(this->radioSetPin, OUTPUT);
 

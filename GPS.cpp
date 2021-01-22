@@ -22,13 +22,34 @@ GPS::GPS(HardwareSerial *gpsSerial) {
 	this->gpsSerial = gpsSerial;
 }
 
-// Call the begin function and set the UART baudrate
-void GPS::begin(uint8_t baudrate = 9600) {
-	gpsSerial->begin(baudrate);
+// Call the begin function of the gpsSerial object and sets the UART baudrate and set the rate at which we will receive GPS data
+void GPS::begin(uint8_t rate = 5) {
+  // Set the baudrate to 4800 so we can communicate first with the GPS module
+	gpsSerial->begin(4800);
+
+  // Set the update frequency
+  String sentence = "PCAS02," + String(1000 / rate);
+  // Calculate the checksum
+  int checksum = 0;
+  for (uint8_t i = 0; i < sentence.length(); i++) {
+    checksum ^= uint8_t(sentence[i]);
+  }
+  // Transmit the message
+  gpsSerial->println("$" + sentence + "*" + checksum);
+
+  // Set the correct baudrate if necessary 
+  if (rate > 1) {
+    // Set the UART baudrate of the GPS module to 19200
+    gpsSerial->println("$PCAS01,2*1E");
+
+    // End the serial connection and start a new one with the correct baudrate
+    gpsSerial->end();
+    gpsSerial->begin(19200);
+  }
 }
 
 // Read gpsSerial and encode it using gps::encode
-void GPS::read() {
+void GPS::read(void) {
 	while (gpsSerial->available()) {
 		gps.encode(gpsSerial->read());
 	}

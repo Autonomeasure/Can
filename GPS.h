@@ -40,13 +40,13 @@ class GPS {
 		GPS(HardwareSerial *gpsSerial);
 
 		/*
-		 * Call the begin function of the gpsSerial object and sets the UART baudrate
+		 * Call the begin function of the gpsSerial object and sets the UART baudrate and set the rate at which we will receive GPS data
 		 * 
-		 * @param baudrate [uint8_t] The baudrate on which the HardwareSerial port connected to the GPS module will function [OPTIONAL, DEFAULT IS 9600 BAUD]
+     * @param rate [uint16_t] The amount of times the GPS module transmits GPS data [OPTIONAL, DEFAULT IS 5 Hz]
 		 * 
 		 * @return void
 		*/
-		void begin(uint8_t baudrate = 9600);
+		void begin(uint8_t rate = 5);
 
 		/*
 		 * Reads the incoming serial data from the GPS module and encodes it with TinyGPSPlus::encode

@@ -1,6 +1,21 @@
 \documentclass[a4paper,10pt]{article}
 
 \usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+
+\hypersetup{
+	colorlinks=true,
+	linkcolor=black,
+	urlcolor=blue,
+}
+
+
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\hbadness=10000
+
 
 \author{Joep van Dijk}
 \title{CanSat 2020-2021 | Team Autonomeasure | Can code documentation}
@@ -164,10 +179,10 @@
 				\vspace{3ex}
 			\end{method}
 		
-			\begin{method}{begin}{void GPS::begin(uint8\_t baudrate = 9600)}
+			\begin{method}{begin}{void GPS::begin(uint8\_t rate = 5)}
 				\begin{methodargs}
 					\begin{itemize}
-						\item \texttt{baudrate} is an \texttt{uint8\_t} and holds the baudrate that is going to be used for the serial connection with the GPS module. The default value is \texttt{9600}. 
+						\item \texttt{rate} is an \texttt{uint8\_t} and holds the update frequency of the fix ... . The default value is \texttt{5 Hz}. 
 					\end{itemize}
 				\end{methodargs}
 			
@@ -176,12 +191,14 @@
 				\end{methodreturns}
 			
 				\begin{methoddesc}
-					Call the begin function of the \texttt{gpsSerial} object and sets the UART baudrate. 
+					Call the begin function of the gpsSerial object and sets the UART baudrate and set the rate at which we will receive GPS data. 
 				\end{methoddesc}
 			
 				\begin{methodscope}
 					\texttt{PUBLIC}
 				\end{methodscope}
+			
+				\vspace{3ex}
 			\end{method}
 			
 			\begin{method}{read}{void GPS::read(void)}
