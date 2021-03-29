@@ -12,6 +12,8 @@
  *    GitHub Can repo:                https://github.com/Autonomeasure/Can
  *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
  *    Instagram:                      https://instagram.com/Autonomeasure/
+ *    
+ * This project falls under the GNU GPL-3.0 license, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt. 
  */
 #if !defined(VECTOR3_H)
 #define VECTOR3_H

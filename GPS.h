@@ -12,12 +12,14 @@
  *    GitHub Can repo:                https://github.com/Autonomeasure/Can
  *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
  *    Instagram:                      https://instagram.com/Autonomeasure/
+ *    
+ * This project falls under the GNU GPL-3.0 license, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt. 
  */
 #if !defined(GPS_H)
 #define GPS_H
 #include "TinyGPS++.h"
 
-#include "Error.h"
+//#include "Error.h"
 
 typedef struct {
 	char *time;
@@ -63,9 +65,9 @@ class GPS {
      * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
      * @param time [char*] A char[] where the time is saved, the array has four elements: hours, minutes, seconds, centiseconds
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-		uint8_t get_time(Error *errors, char *time);
+		uint8_t get_time(char *time);
 
     /*
      * Get the current location (latitude and longitude) of the Can
@@ -74,9 +76,9 @@ class GPS {
      * @param lat [double*] A pointer to the variable where the latitude is going to be saved
      * @param lon [double*] A pointer to the variable where the longitude is going to be saved
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-		uint8_t get_position(Error *errors, double *lat, double *lon);
+		uint8_t get_position(double *lat, double *lon);
 
     /*
      * Get the current altitude of the Can in meters
@@ -84,9 +86,9 @@ class GPS {
      * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
      * @param altitude [double*] A pointer to the variable where the altitude of the Can is going to be saved
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-		uint8_t get_altitude(Error *errors, double *altitude);
+		uint8_t get_altitude(double *altitude);
 
 //    /*
 //     * Get the current ground speed of the Can in m/s

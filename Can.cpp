@@ -12,6 +12,8 @@
  *    GitHub Can repo:                https://github.com/Autonomeasure/Can
  *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
  *    Instagram:                      https://instagram.com/Autonomeasure/
+ *    
+ * This project falls under the GNU GPL-3.0 license, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt. 
  */
 #include "Can.h"
 
@@ -19,8 +21,8 @@
 // -============= PRIVATE METHODS =============-
 
 // Saves the time and altitude to the EEPROM
-uint8_t Can::save_altitude_time_to_eeprom(Error *errors, char *time, double altitude) {
-  uint8_t amountOfErrors;
+uint8_t Can::save_altitude_time_to_eeprom(char *time, double altitude) {
+  uint8_t error;
 
   // Save the current time in EEPROM
   EEPROM.put(EEPROM_GPS_TIME_OFFSET + ((sizeof(char) * 4) * (gps_altitude_time_cursor + 1)), time);
@@ -32,12 +34,12 @@ uint8_t Can::save_altitude_time_to_eeprom(Error *errors, char *time, double alti
   gps_altitude_time_cursor++;
   gps_altitude_time_cursor %= 10;
 
-  return amountOfErrors;
+  return error;
 }
 
 // Calculate the air speed (vertical velocity) with the data that has been saved in the EEPROM
-uint8_t Can::calculate_air_speed(Error *errors, double *air_speed) {
-  uint8_t amountOfErrors;
+uint8_t Can::calculate_air_speed(double *air_speed) {
+  uint8_t error;
 
   char time1[4];
   char time2[4];
@@ -70,14 +72,14 @@ uint8_t Can::calculate_air_speed(Error *errors, double *air_speed) {
   // Calculate the vertical velocity
   *air_speed = deltaAltitude / passedSeconds;
 
-  return amountOfErrors;
+  return error;
 }
 
 // Calculate the expected amount of time it takes until the Can hits the ground
-uint8_t Can::calculate_expected_time_until_impact(Error *errors, double altitude, double air_speed, double *exptected_time_until_impact) {
-  uint8_t amountOfErrors;
+uint8_t Can::calculate_expected_time_until_impact(double altitude, double air_speed, double *exptected_time_until_impact) {
+  uint8_t error;
 
-  return amountOfErrors;
+  return error;
 }
 
 
@@ -101,8 +103,8 @@ Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
-uint8_t Can::begin(Error *errors, uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5) {
-	uint8_t amountOfErrors;
+uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5) {
+	uint8_t error;
 	this->radioSerial->begin(radio_uart_baudrate);
 	this->gps->begin(gps_update_frequency);
 
@@ -112,15 +114,13 @@ uint8_t Can::begin(Error *errors, uint8_t radio_uart_baudrate = 4800, uint8_t gp
 	digitalWrite(this->radioSetPin, HIGH);
 
 	if (!this->bmp->begin()) {
-		errors[amountOfErrors].errorID = 1;
-		amountOfErrors++;
+		error = 1; // BMP280 module failed to initialize
 	}
 	if (!this->mpu->begin()) {
-		errors[amountOfErrors].errorID = 2;
-			amountOfErrors++;
+		error = 2; // MPU6050 module failed to initialize
 	}
 
-	return amountOfErrors;
+	return error;
 }
 
 // Configure the APC220 module to the right settings
@@ -148,7 +148,7 @@ void Can::configureRadio() {
 }
 
 // Check if the APC220 is configured correctly
-Error Can::checkRadioConfiguration() {
+uint8_t Can::checkRadioConfiguration() {
   // Set the APC220 in config mode
 	digitalWrite(this->radioSetPin, LOW);
 
@@ -175,21 +175,18 @@ Error Can::checkRadioConfiguration() {
 }
 
 // This method will gather all the data from modules and save it to the SD card and send it to the radio
-uint8_t Can::tick(Error *errors) {
-	uint8_t amountOfErrors;
+uint8_t* Can::tick() {
+	uint8_t error;
 
 	// Gather the GPS data
 	GPS_Altitude alt;
 	gps->read();
-  Error *errs1;
-  Error *errs2;
-  Error *errs3;
-	uint8_t amountOfErrors1 = gps->get_time(errs1, alt.time); // TODO add error handling
-	uint8_t amountOfErrors2 = gps->get_altitude(errs2, &alt.altitude); // TODO add error handling
+	uint8_t errorGPSTime = gps->get_time(alt.time); // TODO add error handling
+	uint8_t errorGPSAltitude = gps->get_altitude(&alt.altitude); // TODO add error handling
 
   double lat, lon;
 
-  uint8_t amountOfErrors3 = gps->get_position(errs3, &lat, &lon);
+  uint8_t errorGPSPosition = gps->get_position(&lat, &lon);
  
   float bmpTemperature = this->bmp->readTemperature();
   float pressure = this->bmp->readPressure();
@@ -200,7 +197,8 @@ uint8_t Can::tick(Error *errors) {
   bool mpuData = this->mpu->getEvent(&a, &g, &temp);
 
   if (!mpuData) {
-    // TODO add error handling
+    error = 11; // Invalid MPU6050 data
+    return error;
   }
 
   acceleration.x = a.acceleration.x;
@@ -218,6 +216,8 @@ uint8_t Can::tick(Error *errors) {
 	// Check if the time and altitude should be saved
 	if (this->lastPacketID % this->ticksPerSecond == 0) {
 		// Yep, the time and altitude should be saved
-		amountOfErrors += save_altitude_time_to_eeprom(errors, alt.time, alt.altitude);
+		/*amountOfErrors +=*/ save_altitude_time_to_eeprom(alt.time, alt.altitude);
 	}
+
+ return error;
 }

@@ -11,8 +11,20 @@
  *    GitHub Autonomeasure:           https://github.com/Autonomeasure
  *    GitHub Can repo:                https://github.com/Autonomeasure/Can
  *    GitHub GroundStation repo:      https://github.com/Autonomeasure/GroundStation
- *    Instagram:                      https://instagram.com/Autonomeasure/
+ *    Instagram:                      https://instagram.com/Autonomeasure/ 
  * 
+ * 
+ * ERROR CODES:
+ *  0: No error occured
+ *  1: BMP280 module failed to initialize
+ *  2: MPU6050 module failed to initialize
+ *  
+ *  10: Invalid BMP280 data
+ *  11: Invalid MPU6050 data
+ *  
+ *  30: The GPS time is invalid
+ *  31: The GPS location is invalid
+ *  32: The GPS altitude is invalid
  * 
  * TODO
  * 		1) Figure out what should be done if an error occurs
@@ -20,6 +32,10 @@
  * 			2) Try to fix it by recalling Can::tick / rereading the sensor / etc
  * 		2) Write the Can::tick logic
  * 		3) Write the Can::checkRadioConfiguration check so it checks if the radio is configured correctly
+ *    4) finish Can::calculate_expected_time_until_impact
+ *    
+ *    
+ * This project falls under the GNU GPL-3.0 license, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt.
  */
 #if !defined(CAN_H)
 #define CAN_H
@@ -33,7 +49,7 @@
 
 #include "Vector3.h"
 
-#include "Error.h"
+//#include "Error.h"
 
 #define EEPROM_LAST_SENT_PACKET_ID_OFFSET (0) // The last packet ID that has been sent
 #define EEPROM_LAST_SENT_PACKET_TIME_OFFSET (sizeof(unsigned int)) // The last time a packet was sent
@@ -54,13 +70,12 @@ class Can {
     /*
      * Saves the time and altitude to the EEPROM
      * 
-     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
      * @param time [char*] A char[] that has four elements: hour, minutes, seconds and centiseconds
      * @param altitude [double] The altitude the GPS module shows
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-    uint8_t save_altitude_time_to_eeprom(Error *errors, char *time, double altitude);
+    uint8_t save_altitude_time_to_eeprom(char *time, double altitude);
 
     /*
      * Calculate the air speed (vertical velocity) with the data that has been saved in the EEPROM
@@ -68,9 +83,9 @@ class Can {
      * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
      * @param air_speed [double*] A pointer to the variable where the air speed should be saved
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-    uint8_t calculate_air_speed(Error *errors, double *air_speed);
+    uint8_t calculate_air_speed(double *air_speed);
           
     /*
      * Calculate the expected amount of time it takes until the Can hits the ground
@@ -80,18 +95,18 @@ class Can {
      * @param air_speed [double] The current air speed (vertical velocity) in m/s
      * @param exptected_time_until_impact [double*] A pointer to the variable where the expected time until impact should be stored in seconds
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-    uint8_t calculate_expected_time_until_impact(Error *errors, double altitude, double air_speed, double *exptected_time_until_impact);
+    uint8_t calculate_expected_time_until_impact(double altitude, double air_speed, double *exptected_time_until_impact);
 
     /*
      * Save the radio transmission to the SD card
      * 
      * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
      * 
-     * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
      */
-    uint8_t save_radio_transmission_to_sd(Error *errors);
+    uint8_t save_radio_transmission_to_sd();
 
 	public:
 		/*
@@ -118,13 +133,12 @@ class Can {
 		/*
 		 * Begins all the serial ports and modules. 
 		 * 
-		 * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
 		 * @param radio_uart_baudrate [uint8_t] The baudrate on which the HardwareSerial port connected to the radio will function [OPTIONAL, DEFAULT IS 4800 BAUD]
 		 * @param gps_update_frequency [uint8_t] The rate at which the GPS module will transmit GPS data [OPTIONAL, DEFAULT IS 5 Hz]
 		 * 
-		 * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+		 * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
 		*/
-		uint8_t begin(Error *errors, uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5);
+		uint8_t begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5);
 
 		/*
 		 * Configures the APC220 radio module. 
@@ -143,19 +157,21 @@ class Can {
 		/*
 		 * Checks if the APC220 radio module is configured correctly
 		 * 
-		 * @return error [Error] If there is an error error.errorID will be higher than 0, the ID will tell what error has occured, if it is 3 the module is configured incorrectly. 
+		 * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
 		*/
-		Error checkRadioConfiguration();
+		uint8_t checkRadioConfiguration();
 
 		/*
 		 * This method gathers all the data from the BMP280, MPU6050 and GPS module. 
 		 * The data will be saved to the SD card and transmitted over the radio. 
 		 * 
-		 * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
-		 * 
-		 * @return amountOfErrors [uint8_t] This number will tell how many errors occured to access all the elemens of the [Error*] errors array
+		 * @return error [uint8_t*] This array of numbers indicates if an error has occured
 		*/
-		uint8_t tick(Error *errors);
+		uint8_t* tick();
+
+
+    // STATIC METHOD
+    static uint8_t check_error(uint8_t error);
 };
 
 #endif
