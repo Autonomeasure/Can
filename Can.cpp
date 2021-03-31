@@ -93,7 +93,8 @@ Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin
 	this->ticksPerSecond = ticksPerSecond;
 
 	// Create the GPS object
-	this->gps = new GPS(gpsSerial);
+//	this->gps = new GPS(gpsSerial);
+    this->gpsSerial = gpsSerial;
 
 	// Create the Adafruit_BMP280 object
 	this->bmp = new Adafruit_BMP280();
@@ -103,10 +104,16 @@ Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
-uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5) {
+uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 1) {
 	uint8_t error;
 	this->radioSerial->begin(radio_uart_baudrate);
-	this->gps->begin(gps_update_frequency);
+	this->gpsSerial->begin(9600);
+
+//  while (true) {
+//    while (gpsSerial->available()) {
+//      Serial.write(gpsSerial->read());
+//    }
+//  }
 
 	pinMode(this->radioSetPin, OUTPUT);
 
@@ -179,17 +186,62 @@ uint8_t* Can::tick() {
 	uint8_t error;
 
 	// Gather the GPS data
+  unsigned long start = millis();
+  do {
+    while (gpsSerial->available()) {
+      gps.encode(gpsSerial->read());
+    }
+  } while(millis() - start < 300);
 	GPS_Altitude alt;
-	gps->read();
-	uint8_t errorGPSTime = gps->get_time(alt.time); // TODO add error handling
-	uint8_t errorGPSAltitude = gps->get_altitude(&alt.altitude); // TODO add error handling
+
+  uint8_t errorGPSTime;
+  uint8_t errorGPSAltitude;
+  uint8_t errorGPSPosition;
+
+  // Get the time
+  if (!gps.time.isValid()) {
+    errorGPSTime = 30; // Invalid GPS time
+  }
+//  alt.time[0] = gps.time.hour();
+//  alt.time[1] = gps.time.minute();
+//  alt.time[2] = gps.time.second();
+//  alt.time[3] = gps.time.centisecond();
+
+    TinyGPSTime *t = &gps.time;
+    char sz[32];
+    sprintf(sz, "%02d:%02d:%02d ", t->hour(), t->minute(), t->second());
+//    Serial.print(sz);
+
+  // Get the altitude
+  if (!gps.altitude.isValid()) {
+    errorGPSAltitude = 32; // Invalid GPS altitude
+  }
+  alt.altitude = gps.altitude.meters();
 
   double lat, lon;
+  if (!gps.location.isValid()) {
+    errorGPSPosition = 31; // Invalid GPS location
+  }
+  lat = gps.location.lat();
+  lon = gps.location.lng();
 
-  uint8_t errorGPSPosition = gps->get_position(&lat, &lon);
+//  if (errorGPSTime > 0) {
+//    Serial.print("Error: GPS time is invalid, error code:   ");
+//    Serial.println(errorGPSTime);
+//  }
+//  if (errorGPSPosition > 0) {
+//    Serial.print("Error: GPS position is invalid, error code: ");
+//    Serial.println(errorGPSPosition);
+//  }
+//  if (errorGPSAltitude > 0) {
+//    Serial.print("Error: GPS altitude is invalid, error code: ");
+//    Serial.println(errorGPSAltitude);
+//  }
+  
  
   float bmpTemperature = this->bmp->readTemperature();
   float pressure = this->bmp->readPressure();
+  
   Vector3 acceleration;
   Vector3 gyroscope;
   float mpuTemperature;
@@ -211,7 +263,41 @@ uint8_t* Can::tick() {
 
   mpuTemperature = temp.temperature;
 
+  
+  Serial.print("Time: ");
+  Serial.println(sz);
+  Serial.print("Altitude: ");
+  Serial.println(alt.altitude);
+  Serial.print("Lat: ");
+  Serial.println(lat, 6);
+  Serial.print("Lon: ");
+  Serial.println(lon, 6);
+
+  Serial.print("BMP280 temperature: ");
+  Serial.println(bmpTemperature);
+  Serial.print("MPU6050 temperature: ");
+  Serial.println(mpuTemperature);
+  Serial.print("Pressure: ");
+  Serial.println(pressure/100);
+
+  Serial.print("Acceleration x: ");
+  Serial.println(acceleration.x);
+  Serial.print("Acceleration y: ");
+  Serial.println(acceleration.y);
+  Serial.print("Acceleration z: ");
+  Serial.println(acceleration.z);
+
+  
+//  Serial.print("Gyro x: ");
+//  Serial.println(gyroscope.x);
+//  Serial.print("Gyro y: ");
+//  Serial.println(gyroscope.y);
+//  Serial.print("Gyro z: ");
+//  Serial.println(gyroscope.z);
+  
+
   // Transmit all the data to the groundstation
+  Serial1.println("Test123");
 	
 	// Check if the time and altitude should be saved
 	if (this->lastPacketID % this->ticksPerSecond == 0) {

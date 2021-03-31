@@ -25,8 +25,8 @@ GPS::GPS(HardwareSerial *gpsSerial) {
 }
 
 // Call the begin function of the gpsSerial object and sets the UART baudrate and set the rate at which we will receive GPS data
-void GPS::begin(uint8_t rate = 5) {
-  // Set the baudrate to 4800 so we can communicate first with the GPS module
+void GPS::begin(uint8_t rate = 1) {
+  // Set the baudrate to 9600 so we can communicate first with the GPS module
 	gpsSerial->begin(9600);
 
 //  // Set the update frequency
@@ -52,7 +52,7 @@ void GPS::begin(uint8_t rate = 5) {
 
 // Read gpsSerial and encode it using gps::encode
 void GPS::read(void) {
-	while (gpsSerial->available()) {
+	while (gpsSerial->available() > 0) {
 		gps.encode(gpsSerial->read());
 	}
 }

@@ -48,7 +48,7 @@ class GPS {
 		 * 
 		 * @return void
 		*/
-		void begin(uint8_t rate = 5);
+		void begin(uint8_t rate = 1);
 
 		/*
 		 * Reads the incoming serial data from the GPS module and encodes it with TinyGPSPlus::encode

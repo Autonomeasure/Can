@@ -45,7 +45,8 @@
 #include "src/Adafruit_BMP280.h"
 #include "src/Adafruit_MPU6050.h"
 
-#include "GPS.h"
+#include "TinyGPS++.h"
+//#include <TinyGPS++.h>
 
 #include "Vector3.h"
 
@@ -56,9 +57,17 @@
 #define EEPROM_GPS_TIME_OFFSET (EEPROM_LAST_SENT_PACKET_TIME_OFFSET + (sizeof(char) * 4))
 #define EEPROM_GPS_ALTITUDE_OFFSET (EEPROM_GPS_TIME_OFFSET + (sizeof(char) * 4 * 10))
 
+
+typedef struct {
+  char *time;
+  double altitude;
+}GPS_Altitude;
+
 class Can {
 	private:
-		GPS *gps; 						// The GPS object that will be used to gather GPS data
+//		GPS *gps; 						// The GPS object that will be used to gather GPS data
+      HardwareSerial   *gpsSerial;
+      TinyGPSPlus gps;
 
 		uint8_t radioSetPin;	// The pin where the set pin on the radio module is connected to, for configuring purposes
 
@@ -134,11 +143,11 @@ class Can {
 		 * Begins all the serial ports and modules. 
 		 * 
 		 * @param radio_uart_baudrate [uint8_t] The baudrate on which the HardwareSerial port connected to the radio will function [OPTIONAL, DEFAULT IS 4800 BAUD]
-		 * @param gps_update_frequency [uint8_t] The rate at which the GPS module will transmit GPS data [OPTIONAL, DEFAULT IS 5 Hz]
+		 * @param gps_update_frequency [uint8_t] The rate at which the GPS module will transmit GPS data [OPTIONAL, DEFAULT IS 1 Hz]
 		 * 
 		 * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
 		*/
-		uint8_t begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 5);
+		uint8_t begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 1);
 
 		/*
 		 * Configures the APC220 radio module. 
