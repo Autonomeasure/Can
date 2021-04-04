@@ -86,7 +86,7 @@ uint8_t Can::calculate_expected_time_until_impact(double altitude, double air_sp
 // -============= PUBLIC METHODS =============-
 
 // The constructor, sets the radio serial and gps serial port variables. It also sets the radio SET pin variable for later use.
-Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond) {
+Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa) {
 	// Set all the variables
 	this->radioSerial = radioSerial;
 	this->radioSetPin = radioSetPin;
@@ -101,6 +101,9 @@ Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin
 
 	// Create the new Adafruit_BMP280 objct
 	this->mpu = new Adafruit_MPU6050();
+
+  // Set the sea level hPa variable
+  this->sea_level_hPa = sea_level_hPa;
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
@@ -120,6 +123,9 @@ uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_freque
 	if (!this->mpu->begin()) {
 		error = 2; // MPU6050 module failed to initialize
 	}
+
+ // Initialize the SD card
+ 
 
 	return error;
 }
@@ -186,7 +192,8 @@ uint8_t* Can::tick() {
       gps.encode(gpsSerial->read());
     }
   } while(millis() - start < 300);
-	GPS_Altitude alt;
+
+  float gps_altitude;
 
   uint8_t errorGPSTime;
   uint8_t errorGPSAltitude;
@@ -206,7 +213,7 @@ uint8_t* Can::tick() {
   if (!gps.altitude.isValid()) {
     errorGPSAltitude = 32; // Invalid GPS altitude
   }
-  alt.altitude = gps.altitude.meters();
+  gps_altitude = gps.altitude.meters();
 
   double lat, lon;
   if (!gps.location.isValid()) {
@@ -229,16 +236,17 @@ uint8_t* Can::tick() {
 //  }
   
  
-  float bmpTemperature = this->bmp->readTemperature();
+  float bmp_temperature = this->bmp->readTemperature();
   float pressure = this->bmp->readPressure();
+  float bmp_altitude = this->bmp->readAltitude(sea_level_hPa);
   
   Vector3 acceleration;
   Vector3 gyroscope;
-  float mpuTemperature;
+  float mpu_temperature;
   sensors_event_t a, g, temp;
-  bool mpuData = this->mpu->getEvent(&a, &g, &temp);
+  bool mpu_data = this->mpu->getEvent(&a, &g, &temp);
 
-  if (!mpuData) {
+  if (!mpu_data) {
     error = 11; // Invalid MPU6050 data
     return error;
   }
@@ -251,22 +259,24 @@ uint8_t* Can::tick() {
   gyroscope.y = a.gyro.y;
   gyroscope.z = a.gyro.z;
 
-  mpuTemperature = temp.temperature;
+  mpu_temperature = temp.temperature;
 
   
   Serial.print("Time: ");
   Serial.println(sz);
-  Serial.print("Altitude: ");
-  Serial.println(alt.altitude);
+  Serial.print("GPS altitude: ");
+  Serial.println(gps_altitude);
   Serial.print("Lat: ");
   Serial.println(lat, 6);
   Serial.print("Lon: ");
   Serial.println(lon, 6);
 
   Serial.print("BMP280 temperature: ");
-  Serial.println(bmpTemperature);
+  Serial.println(bmp_temperature);
+  Serial.print("BMP280 altitude: ");
+  Serial.println(bmp_altitude);
   Serial.print("MPU6050 temperature: ");
-  Serial.println(mpuTemperature);
+  Serial.println(mpu_temperature);
   Serial.print("Pressure: ");
   Serial.println(pressure/100);
 
@@ -292,7 +302,7 @@ uint8_t* Can::tick() {
 	// Check if the time and altitude should be saved
 	if (this->lastPacketID % this->ticksPerSecond == 0) {
 		// Yep, the time and altitude should be saved
-		/*amountOfErrors +=*/ save_altitude_time_to_eeprom(alt.time, alt.altitude);
+//		/*amountOfErrors +=*/ save_altitude_time_to_eeprom(alt.time, alt.altitude);
 	}
 
  return error;

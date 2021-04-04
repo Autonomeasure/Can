@@ -17,7 +17,7 @@
  */
 #include "Can.h"
 
-Can can = Can(&Serial1, &Serial2, 38, 3);
+Can can = Can(&Serial1, &Serial2, 38, 3, 1021);
 
 // Set the variables for the "delay" without delay()
 unsigned long previousMillis;

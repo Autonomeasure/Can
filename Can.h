@@ -41,6 +41,9 @@
 #define CAN_H
 #include <Arduino.h>
 #include <EEPROM.h>
+#include <SPI.h>
+#include <SD.h>
+#include <Servo.h>
 
 #include "src/Adafruit_BMP280.h"
 #include "src/Adafruit_MPU6050.h"
@@ -62,8 +65,11 @@ typedef struct {
 
 class Can {
 	private:
-      HardwareSerial   *gpsSerial;
-      TinyGPSPlus gps;
+    HardwareSerial   *gpsSerial;
+    TinyGPSPlus gps;
+
+    File log_file;
+    Servo servo;
 
 		uint8_t radioSetPin;	// The pin where the set pin on the radio module is connected to, for configuring purposes
 
@@ -71,6 +77,11 @@ class Can {
 
 		unsigned int lastPacketID;
 		unsigned int ticksPerSecond;
+
+    /*
+     * 
+     */
+     uint8_t save_data_to_sd(String data);
 
     /*
      * Saves the time and altitude to the EEPROM
@@ -114,6 +125,8 @@ class Can {
     uint8_t save_radio_transmission_to_sd();
 
 	public:
+    float sea_level_hPa; // Used to calculate the altitude based on the current air pressure
+ 
 		/*
 		 * Sets the radioSerial variable. 
 		 * Creates a new instance of GPS and initializes that instance (with the gpsSerial variable). 
@@ -123,10 +136,11 @@ class Can {
 		 * @param gpsSerial [HardwareSerial*] A pointer to a hardware serial port that communicates with the GPS module
 		 * @param radioSetPin [int] The pin where the set pin on the radio module is connected to, for configuring purposes
 		 * @param tickPerSecond [uint8_t] How many times per second Can::tick is being called
+     * @param sea_level_hPa [float] The hPa at sea level 
 		 * 
 		 * @return void
 		 */
-		Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond);
+		Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa);
 
     // A pointer to the hardware serial port that communicates with the radio module (APC220)
 		HardwareSerial *radioSerial;
