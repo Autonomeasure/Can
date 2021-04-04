@@ -109,12 +109,6 @@ uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_freque
 	this->radioSerial->begin(radio_uart_baudrate);
 	this->gpsSerial->begin(9600);
 
-//  while (true) {
-//    while (gpsSerial->available()) {
-//      Serial.write(gpsSerial->read());
-//    }
-//  }
-
 	pinMode(this->radioSetPin, OUTPUT);
 
   // Set the radio into "production" mode
@@ -202,10 +196,6 @@ uint8_t* Can::tick() {
   if (!gps.time.isValid()) {
     errorGPSTime = 30; // Invalid GPS time
   }
-//  alt.time[0] = gps.time.hour();
-//  alt.time[1] = gps.time.minute();
-//  alt.time[2] = gps.time.second();
-//  alt.time[3] = gps.time.centisecond();
 
     TinyGPSTime *t = &gps.time;
     char sz[32];
@@ -288,12 +278,12 @@ uint8_t* Can::tick() {
   Serial.println(acceleration.z);
 
   
-//  Serial.print("Gyro x: ");
-//  Serial.println(gyroscope.x);
-//  Serial.print("Gyro y: ");
-//  Serial.println(gyroscope.y);
-//  Serial.print("Gyro z: ");
-//  Serial.println(gyroscope.z);
+  Serial.print("Gyro x: ");
+  Serial.println(gyroscope.x);
+  Serial.print("Gyro y: ");
+  Serial.println(gyroscope.y);
+  Serial.print("Gyro z: ");
+  Serial.println(gyroscope.z);
   
 
   // Transmit all the data to the groundstation

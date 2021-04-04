@@ -46,11 +46,8 @@
 #include "src/Adafruit_MPU6050.h"
 
 #include "TinyGPS++.h"
-//#include <TinyGPS++.h>
 
 #include "Vector3.h"
-
-//#include "Error.h"
 
 #define EEPROM_LAST_SENT_PACKET_ID_OFFSET (0) // The last packet ID that has been sent
 #define EEPROM_LAST_SENT_PACKET_TIME_OFFSET (sizeof(unsigned int)) // The last time a packet was sent
@@ -65,7 +62,6 @@ typedef struct {
 
 class Can {
 	private:
-//		GPS *gps; 						// The GPS object that will be used to gather GPS data
       HardwareSerial   *gpsSerial;
       TinyGPSPlus gps;
 
