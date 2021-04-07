@@ -132,7 +132,6 @@ class Can {
 		 * Creates a new instance of GPS and initializes that instance (with the gpsSerial variable). 
 		 * Creates a new instance of Adafruit_BMP280. 
 		 *  
-		 * @param radioSerial [HardwareSerial*] A pointer to a hardware serial port that communicates with the radio module (APC220)
 		 * @param gpsSerial [HardwareSerial*] A pointer to a hardware serial port that communicates with the GPS module
 		 * @param radioSetPin [int] The pin where the set pin on the radio module is connected to, for configuring purposes
 		 * @param tickPerSecond [uint8_t] How many times per second Can::tick is being called
@@ -140,7 +139,7 @@ class Can {
 		 * 
 		 * @return void
 		 */
-		Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa);
+		Can(HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa);
 
     // A pointer to the hardware serial port that communicates with the radio module (APC220)
 		HardwareSerial *radioSerial;
@@ -157,7 +156,7 @@ class Can {
 		 * 
 		 * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
 		*/
-		uint8_t begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 1);
+		uint8_t begin(uint8_t radio_uart_baudrate = 9600, uint8_t gps_update_frequency = 1);
 
 		/*
 		 * Configures the APC220 radio module. 

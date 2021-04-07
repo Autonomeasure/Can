@@ -86,9 +86,9 @@ uint8_t Can::calculate_expected_time_until_impact(double altitude, double air_sp
 // -============= PUBLIC METHODS =============-
 
 // The constructor, sets the radio serial and gps serial port variables. It also sets the radio SET pin variable for later use.
-Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa) {
+Can::Can(HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa) {
 	// Set all the variables
-	this->radioSerial = radioSerial;
+//	this->radioSerial = radioSerial;
 	this->radioSetPin = radioSetPin;
 	this->ticksPerSecond = ticksPerSecond;
 
@@ -104,13 +104,19 @@ Can::Can(HardwareSerial *radioSerial, HardwareSerial *gpsSerial, int radioSetPin
 
   // Set the sea level hPa variable
   this->sea_level_hPa = sea_level_hPa;
+
+  pinMode(2, OUTPUT);
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
-uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_frequency = 1) {
+uint8_t Can::begin(uint8_t radio_uart_baudrate = 9600, uint8_t gps_update_frequency = 1) {
+  Serial.println("Can::begin");
 	uint8_t error;
-	this->radioSerial->begin(radio_uart_baudrate);
-	this->gpsSerial->begin(9600);
+//	this->radioSerial->begin(radio_uart_baudrate);
+  Serial1.begin(9600);
+  Serial2.begin(9600);
+//	this->gpsSerial->begin(9600);
+
 
 	pinMode(this->radioSetPin, OUTPUT);
 
@@ -126,7 +132,7 @@ uint8_t Can::begin(uint8_t radio_uart_baudrate = 4800, uint8_t gps_update_freque
 
  // Initialize the SD card
  
-
+  Serial.println("End Can::begin");
 	return error;
 }
 
@@ -183,15 +189,17 @@ uint8_t Can::checkRadioConfiguration() {
 
 // This method will gather all the data from modules and save it to the SD card and send it to the radio
 uint8_t* Can::tick() {
+  digitalWrite(2, HIGH);
 	uint8_t error;
 
 	// Gather the GPS data
   unsigned long start = millis();
   do {
-    while (gpsSerial->available()) {
+    if (gpsSerial->available() > 1) {
       gps.encode(gpsSerial->read());
+//      Serial.println("GPSSSS");
     }
-  } while(millis() - start < 300);
+  } while(millis() - start < 250);
 
   float gps_altitude;
 
@@ -204,9 +212,9 @@ uint8_t* Can::tick() {
     errorGPSTime = 30; // Invalid GPS time
   }
 
-    TinyGPSTime *t = &gps.time;
-    char sz[32];
-    sprintf(sz, "%02d:%02d:%02d ", t->hour(), t->minute(), t->second());
+//    TinyGPSTime *t = &gps.time;
+//    char sz[32];
+//    sprintf(sz, "%02d:%02d:%02d ", t->hour(), t->minute(), t->second());
 //    Serial.print(sz);
 
   // Get the altitude
@@ -221,20 +229,6 @@ uint8_t* Can::tick() {
   }
   lat = gps.location.lat();
   lon = gps.location.lng();
-
-//  if (errorGPSTime > 0) {
-//    Serial.print("Error: GPS time is invalid, error code:   ");
-//    Serial.println(errorGPSTime);
-//  }
-//  if (errorGPSPosition > 0) {
-//    Serial.print("Error: GPS position is invalid, error code: ");
-//    Serial.println(errorGPSPosition);
-//  }
-//  if (errorGPSAltitude > 0) {
-//    Serial.print("Error: GPS altitude is invalid, error code: ");
-//    Serial.println(errorGPSAltitude);
-//  }
-  
  
   float bmp_temperature = this->bmp->readTemperature();
   float pressure = this->bmp->readPressure();
@@ -262,42 +256,53 @@ uint8_t* Can::tick() {
   mpu_temperature = temp.temperature;
 
   
-  Serial.print("Time: ");
-  Serial.println(sz);
-  Serial.print("GPS altitude: ");
-  Serial.println(gps_altitude);
-  Serial.print("Lat: ");
-  Serial.println(lat, 6);
-  Serial.print("Lon: ");
-  Serial.println(lon, 6);
+  char hour = gps.time.hour();
+  char minute = gps.time.minute();
+  char second = gps.time.second();
+  char centisecond = gps.time.centisecond();
 
-  Serial.print("BMP280 temperature: ");
-  Serial.println(bmp_temperature);
-  Serial.print("BMP280 altitude: ");
-  Serial.println(bmp_altitude);
-  Serial.print("MPU6050 temperature: ");
-  Serial.println(mpu_temperature);
-  Serial.print("Pressure: ");
-  Serial.println(pressure/100);
+  char t[] = {gps.time.hour() + 1, gps.time.minute() + 1, gps.time.second() + 1, gps.time.centisecond() + 1};
 
-  Serial.print("Acceleration x: ");
-  Serial.println(acceleration.x);
-  Serial.print("Acceleration y: ");
-  Serial.println(acceleration.y);
-  Serial.print("Acceleration z: ");
-  Serial.println(acceleration.z);
+  Serial1.print(this->lastPacketID);
+  Serial1.print(';');
+  Serial1.print(int(bmp_temperature * 100));
+  Serial1.print(';');
+  Serial1.print(int(mpu_temperature * 100));
+  Serial1.print(';');
+  Serial1.print(pressure / 100);
+  Serial1.print(';');
+  Serial1.print(lat, 12);
+  Serial1.print(';');
+  Serial1.print(lon, 12);
+  Serial1.print(';');
+  Serial1.print(gps_altitude, 2);
+  Serial1.print(';');
+  Serial1.print(bmp_altitude);
+  Serial1.print(';');
+  Serial1.print(int(acceleration.x * 100));
+  Serial1.print(';');
+  Serial1.print(int(acceleration.y * 100));
+  Serial1.print(';');
+  Serial1.print(int(acceleration.z * 100));
+  Serial1.print(';');
+  Serial1.print(int(gyroscope.x * 100));
+  Serial1.print(';');
+  Serial1.print(int(gyroscope.y * 100));
+  Serial1.print(';');
+  Serial1.print(int(gyroscope.z * 100));
+  Serial1.print(';');
+  Serial1.print(t);
+//  Serial1.print(hour);
+//  Serial1.print(minute);
+//  Serial1.print(second);
+//  Serial1.print(centisecond);
+  Serial1.println(';');
+
+
+  Serial.println(t);
+  
 
   
-  Serial.print("Gyro x: ");
-  Serial.println(gyroscope.x);
-  Serial.print("Gyro y: ");
-  Serial.println(gyroscope.y);
-  Serial.print("Gyro z: ");
-  Serial.println(gyroscope.z);
-  
-
-  // Transmit all the data to the groundstation
-  Serial1.println("Test123");
 	
 	// Check if the time and altitude should be saved
 	if (this->lastPacketID % this->ticksPerSecond == 0) {
@@ -305,5 +310,10 @@ uint8_t* Can::tick() {
 //		/*amountOfErrors +=*/ save_altitude_time_to_eeprom(alt.time, alt.altitude);
 	}
 
+  digitalWrite(2, LOW);
+
+  this->lastPacketID++;
+
+  
  return error;
 }

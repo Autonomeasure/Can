@@ -17,11 +17,11 @@
  */
 #include "Can.h"
 
-Can can = Can(&Serial1, &Serial2, 38, 3, 1021);
+Can can = Can(&Serial2, 38, 3, 1016);
 
 // Set the variables for the "delay" without delay()
 unsigned long previousMillis;
-const int interval = 1000; // Run the code two times a second
+const int interval = 500; // Run the code two times a second
 
 void setup() {
 	Serial.begin(9600); // Debug serial connection
@@ -29,7 +29,7 @@ void setup() {
 	if (error > 0) {
 		// This means we have an error
 	}
-	can.configureRadio(); // Set the correct configuration in the APC220 module
+//	can.configureRadio(); // Set the correct configuration in the APC220 module
 }
 
 void loop() {
@@ -42,10 +42,11 @@ void loop() {
 		// Tick logic here
 		// Error handling
 		uint8_t error = can.tick(); // Call Can::tick and save any errors that occured
+//    Serial1.println("lol");
 		if (error > 0) {
 			// Error(s) occured
-      Serial.print("ERROR: ");
-      Serial.println(error);
+//      Serial.print("ERROR: ");
+//      Serial.println(error);
 		}
 	}
 }
