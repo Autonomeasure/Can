@@ -78,6 +78,15 @@ class Can {
 		unsigned int lastPacketID;
 		unsigned int ticksPerSecond;
 
+    // GPS accuracy things
+    TinyGPSCustom* vdop;
+
+    // Previous GPS data to check if we are still receiving new data
+    double last_lat;
+    double last_lon;
+    double last_alt;
+    uint8_t gps_error_count;
+
     /*
      * 
      */
@@ -126,6 +135,8 @@ class Can {
 
 	public:
     float sea_level_hPa; // Used to calculate the altitude based on the current air pressure
+
+    static const int error_led = 4;
  
 		/*
 		 * Sets the radioSerial variable. 

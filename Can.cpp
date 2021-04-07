@@ -105,7 +105,10 @@ Can::Can(HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, flo
   // Set the sea level hPa variable
   this->sea_level_hPa = sea_level_hPa;
 
+  vdop = new TinyGPSCustom(gps, "GPGSA", 17);
+
   pinMode(2, OUTPUT);
+  pinMode(error_led, OUTPUT);
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
@@ -189,7 +192,6 @@ uint8_t Can::checkRadioConfiguration() {
 
 // This method will gather all the data from modules and save it to the SD card and send it to the radio
 uint8_t* Can::tick() {
-  digitalWrite(2, HIGH);
 	uint8_t error;
 
 	// Gather the GPS data
@@ -229,6 +231,19 @@ uint8_t* Can::tick() {
   }
   lat = gps.location.lat();
   lon = gps.location.lng();
+
+  if (lat == last_lat && lon == last_lon && gps_altitude == last_alt) {
+    gps_error_count++;
+  } else {
+    gps_error_count = 0;
+    last_lat = lat;
+    last_lon = lon;
+    last_alt = gps_altitude;
+  }
+
+  if ((lat == 0 && lon == 0 && gps_altitude == 0) || (!gps.location.isValid() && !gps.altitude.isValid()) || (gps_error_count > 5)) {
+    digitalWrite(error_led, HIGH);
+  }
  
   float bmp_temperature = this->bmp->readTemperature();
   float pressure = this->bmp->readPressure();
@@ -255,14 +270,11 @@ uint8_t* Can::tick() {
 
   mpu_temperature = temp.temperature;
 
-  
-  char hour = gps.time.hour();
-  char minute = gps.time.minute();
-  char second = gps.time.second();
-  char centisecond = gps.time.centisecond();
 
   char t[] = {gps.time.hour() + 1, gps.time.minute() + 1, gps.time.second() + 1, gps.time.centisecond() + 1};
 
+
+  digitalWrite(2, HIGH);
   Serial1.print(this->lastPacketID);
   Serial1.print(';');
   Serial1.print(int(bmp_temperature * 100));
@@ -292,15 +304,11 @@ uint8_t* Can::tick() {
   Serial1.print(int(gyroscope.z * 100));
   Serial1.print(';');
   Serial1.print(t);
-//  Serial1.print(hour);
-//  Serial1.print(minute);
-//  Serial1.print(second);
-//  Serial1.print(centisecond);
   Serial1.println(';');
+  digitalWrite(2, LOW);
 
-
-  Serial.println(t);
-  
+  Serial.print("VDOP: ");
+  Serial.println(vdop->value());
 
   
 	
@@ -310,10 +318,8 @@ uint8_t* Can::tick() {
 //		/*amountOfErrors +=*/ save_altitude_time_to_eeprom(alt.time, alt.altitude);
 	}
 
-  digitalWrite(2, LOW);
-
   this->lastPacketID++;
 
-  
+  digitalWrite(error_led, LOW);
  return error;
 }
