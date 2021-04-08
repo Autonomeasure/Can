@@ -85,16 +85,10 @@ uint8_t Can::calculate_expected_time_until_impact(double altitude, double air_sp
 
 // -============= PUBLIC METHODS =============-
 
-// The constructor, sets the radio serial and gps serial port variables. It also sets the radio SET pin variable for later use.
-Can::Can(HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa) {
+// The constructor, sets the radio SET pin variable for later use.
+Can::Can(int radioSetPin, float sea_level_hPa) {
 	// Set all the variables
-//	this->radioSerial = radioSerial;
 	this->radioSetPin = radioSetPin;
-	this->ticksPerSecond = ticksPerSecond;
-
-	// Create the GPS object
-//	this->gps = new GPS(gpsSerial);
-    this->gpsSerial = gpsSerial;
 
 	// Create the Adafruit_BMP280 object
 	this->bmp = new Adafruit_BMP280();
@@ -112,14 +106,11 @@ Can::Can(HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, flo
 }
 
 // Call the begin function of all serial ports and set the mode of the radioSetPin as OUTPUT and set it to HIGH
-uint8_t Can::begin(uint8_t radio_uart_baudrate = 9600, uint8_t gps_update_frequency = 1) {
+uint8_t Can::begin() {
   Serial.println("Can::begin");
 	uint8_t error;
-//	this->radioSerial->begin(radio_uart_baudrate);
-  Serial1.begin(9600);
-  Serial2.begin(9600);
-//	this->gpsSerial->begin(9600);
-
+  RADIO.begin(9600);
+  GPS.begin(9600);
 
 	pinMode(this->radioSetPin, OUTPUT);
 
@@ -151,9 +142,9 @@ void Can::configureRadio() {
   // UART baudrate = 3. 
   // Byte check parity = 0. 
 
-  this->radioSerial->print("w 434000 1 4 3 0");
-  this->radioSerial->write(0x0D);
-  this->radioSerial->write(0x0A);
+  RADIO.print("w 434000 1 4 3 0");
+  RADIO.write(0x0D);
+  RADIO.write(0x0A);
   delay(10);
 
   // Set the APC220 in "production" mode
@@ -172,13 +163,13 @@ uint8_t Can::checkRadioConfiguration() {
 	delay(10);
   
   // Request the configuration back from the APC220
-	this->radioSerial->println("RD"); 
+	RADIO.println("RD"); 
 	delay(10);
 
 	// Read the incoming data from the APC220 module
-	while (this->radioSerial->available()) {
+	while (RADIO.available()) {
     // For testing purposes print it back to the Serial monitor
-		Serial.write(this->radioSerial->read());
+		Serial.write(RADIO.read());
 
 		// TODO Add code to check if the APC220 is configured properly
 	}
@@ -197,8 +188,8 @@ uint8_t* Can::tick() {
 	// Gather the GPS data
   unsigned long start = millis();
   do {
-    if (gpsSerial->available() > 1) {
-      gps.encode(gpsSerial->read());
+    if (GPS.available() > 1) {
+      gps.encode(GPS.read());
 //      Serial.println("GPSSSS");
     }
   } while(millis() - start < 250);
@@ -275,36 +266,36 @@ uint8_t* Can::tick() {
 
 
   digitalWrite(2, HIGH);
-  Serial1.print(this->lastPacketID);
-  Serial1.print(';');
-  Serial1.print(int(bmp_temperature * 100));
-  Serial1.print(';');
-  Serial1.print(int(mpu_temperature * 100));
-  Serial1.print(';');
-  Serial1.print(pressure / 100);
-  Serial1.print(';');
-  Serial1.print(lat, 12);
-  Serial1.print(';');
-  Serial1.print(lon, 12);
-  Serial1.print(';');
-  Serial1.print(gps_altitude, 2);
-  Serial1.print(';');
-  Serial1.print(bmp_altitude);
-  Serial1.print(';');
-  Serial1.print(int(acceleration.x * 100));
-  Serial1.print(';');
-  Serial1.print(int(acceleration.y * 100));
-  Serial1.print(';');
-  Serial1.print(int(acceleration.z * 100));
-  Serial1.print(';');
-  Serial1.print(int(gyroscope.x * 100));
-  Serial1.print(';');
-  Serial1.print(int(gyroscope.y * 100));
-  Serial1.print(';');
-  Serial1.print(int(gyroscope.z * 100));
-  Serial1.print(';');
-  Serial1.print(t);
-  Serial1.println(';');
+  RADIO.print(this->lastPacketID);
+  RADIO.print(';');
+  RADIO.print(int(bmp_temperature * 100));
+  RADIO.print(';');
+  RADIO.print(int(mpu_temperature * 100));
+  RADIO.print(';');
+  RADIO.print(pressure / 100);
+  RADIO.print(';');
+  RADIO.print(lat, 12);
+  RADIO.print(';');
+  RADIO.print(lon, 12);
+  RADIO.print(';');
+  RADIO.print(gps_altitude, 2);
+  RADIO.print(';');
+  RADIO.print(bmp_altitude);
+  RADIO.print(';');
+  RADIO.print(int(acceleration.x * 100));
+  RADIO.print(';');
+  RADIO.print(int(acceleration.y * 100));
+  RADIO.print(';');
+  RADIO.print(int(acceleration.z * 100));
+  RADIO.print(';');
+  RADIO.print(int(gyroscope.x * 100));
+  RADIO.print(';');
+  RADIO.print(int(gyroscope.y * 100));
+  RADIO.print(';');
+  RADIO.print(int(gyroscope.z * 100));
+  RADIO.print(';');
+  RADIO.print(t);
+  RADIO.println(';');
   digitalWrite(2, LOW);
 
   Serial.print("VDOP: ");

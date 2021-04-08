@@ -52,6 +52,9 @@
 
 #include "Vector3.h"
 
+#define RADIO Serial1 // The HardwareSerial object that connects with the APC220 radio module
+#define GPS Serial2 // The HardwareSerial object that connects with the GPS module
+
 #define EEPROM_LAST_SENT_PACKET_ID_OFFSET (0) // The last packet ID that has been sent
 #define EEPROM_LAST_SENT_PACKET_TIME_OFFSET (sizeof(unsigned int)) // The last time a packet was sent
 #define EEPROM_GPS_TIME_OFFSET (EEPROM_LAST_SENT_PACKET_TIME_OFFSET + (sizeof(char) * 4))
@@ -140,20 +143,16 @@ class Can {
  
 		/*
 		 * Sets the radioSerial variable. 
-		 * Creates a new instance of GPS and initializes that instance (with the gpsSerial variable). 
+		 * Creates a new instance of GPS and initializes that instance
 		 * Creates a new instance of Adafruit_BMP280. 
 		 *  
-		 * @param gpsSerial [HardwareSerial*] A pointer to a hardware serial port that communicates with the GPS module
 		 * @param radioSetPin [int] The pin where the set pin on the radio module is connected to, for configuring purposes
-		 * @param tickPerSecond [uint8_t] How many times per second Can::tick is being called
      * @param sea_level_hPa [float] The hPa at sea level 
 		 * 
 		 * @return void
 		 */
-		Can(HardwareSerial *gpsSerial, int radioSetPin, uint8_t ticksPerSecond, float sea_level_hPa);
-
-    // A pointer to the hardware serial port that communicates with the radio module (APC220)
-		HardwareSerial *radioSerial;
+		Can(int radioSetPin, float sea_level_hPa);
+   
     // The Adafruit_BMP280 object to communicate with the BMP280 module
 		Adafruit_BMP280 *bmp;
     // The Adafruit_MPU6050 object to communicate with the MPU6050 module
@@ -162,12 +161,9 @@ class Can {
 		/*
 		 * Begins all the serial ports and modules. 
 		 * 
-		 * @param radio_uart_baudrate [uint8_t] The baudrate on which the HardwareSerial port connected to the radio will function [OPTIONAL, DEFAULT IS 4800 BAUD]
-		 * @param gps_update_frequency [uint8_t] The rate at which the GPS module will transmit GPS data [OPTIONAL, DEFAULT IS 1 Hz]
-		 * 
 		 * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
 		*/
-		uint8_t begin(uint8_t radio_uart_baudrate = 9600, uint8_t gps_update_frequency = 1);
+		uint8_t begin();
 
 		/*
 		 * Configures the APC220 radio module. 
