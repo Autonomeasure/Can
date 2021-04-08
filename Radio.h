@@ -16,9 +16,12 @@
  * This project falls under the GNU GPL-3.0 license, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt.
  */
 
-#if !defined(CAN_H)
-#define CAN_H
+#if !defined(RADIO_H)
+#define RADIO_H
 #include <Arduino.h>
+//#include "Can.h"
+
+#define RADIO Serial1 // The HardwareSerial object that connects with the APC220 radio module
 
 #define SOH 0x01 // Start of heading (SOH), the start of a radio transmission
 #define EOT 0x04 // End of transmission (EOT), the end of a radio transmission
@@ -33,6 +36,8 @@ class Radio {
    * @return [void]
    */
   static void write(uint8_t c);
+
+//  static void write(unsigned char c) { return Radio::write((uint8_t)c); }
   
   /*
    * Convert a float to an integer
@@ -54,11 +59,11 @@ class Radio {
    * @param latitude [double] The latitude received from the GPS module
    * @param longitude [double] The longitude received from the GPS module
    * @param altitude [float] The altitude received from the GPS module
-   * @param time [char[4]] The time received from the GPS module converted to 4 bytes
+   * @param time [char*] The time received from the GPS module converted to 4 bytes
    * 
    * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
    */
-  static uint8_t transmit(unsigned int transmission_id, float bmp_temperature, float mpu_temperature, float pressure, double latitude, double longitude, float altitude, char time[4]);
+  static uint8_t transmit(unsigned int transmission_id, float bmp_temperature, float mpu_temperature, float pressure, double latitude, double longitude, float altitude, char* time);
   
 };
 

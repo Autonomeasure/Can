@@ -41,9 +41,10 @@
 #define CAN_H
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <SPI.h>
-#include <SD.h>
-#include <Servo.h>
+//#include <SPI.h>
+//#include <SD.h>
+
+#include "Radio.h"
 
 #include "src/Adafruit_BMP280.h"
 #include "src/Adafruit_MPU6050.h"
@@ -71,8 +72,7 @@ class Can {
     HardwareSerial   *gpsSerial;
     TinyGPSPlus gps;
 
-    File log_file;
-    Servo servo;
+//    File log_file;
 
 		uint8_t radioSetPin;	// The pin where the set pin on the radio module is connected to, for configuring purposes
 
@@ -137,6 +137,7 @@ class Can {
     uint8_t save_radio_transmission_to_sd();
 
 	public:
+//    static const HardwareSerial RADIO = Serial1;
     float sea_level_hPa; // Used to calculate the altitude based on the current air pressure
 
     static const int error_led = 4;

@@ -16,6 +16,7 @@
  * This project falls under the GNU GPL-3.0 license, see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt. 
  */
 #include "Can.h"
+#include "Radio.h"
 
 
 // -============= PRIVATE METHODS =============-
@@ -110,6 +111,7 @@ uint8_t Can::begin() {
   Serial.println("Can::begin");
 	uint8_t error;
   RADIO.begin(9600);
+  Serial1.begin(9600);
   GPS.begin(9600);
 
 	pinMode(this->radioSetPin, OUTPUT);
@@ -266,40 +268,41 @@ uint8_t* Can::tick() {
 
 
   digitalWrite(2, HIGH);
-  RADIO.print(this->lastPacketID);
-  RADIO.print(';');
-  RADIO.print(int(bmp_temperature * 100));
-  RADIO.print(';');
-  RADIO.print(int(mpu_temperature * 100));
-  RADIO.print(';');
-  RADIO.print(pressure / 100);
-  RADIO.print(';');
-  RADIO.print(lat, 12);
-  RADIO.print(';');
-  RADIO.print(lon, 12);
-  RADIO.print(';');
-  RADIO.print(gps_altitude, 2);
-  RADIO.print(';');
-  RADIO.print(bmp_altitude);
-  RADIO.print(';');
-  RADIO.print(int(acceleration.x * 100));
-  RADIO.print(';');
-  RADIO.print(int(acceleration.y * 100));
-  RADIO.print(';');
-  RADIO.print(int(acceleration.z * 100));
-  RADIO.print(';');
-  RADIO.print(int(gyroscope.x * 100));
-  RADIO.print(';');
-  RADIO.print(int(gyroscope.y * 100));
-  RADIO.print(';');
-  RADIO.print(int(gyroscope.z * 100));
-  RADIO.print(';');
-  RADIO.print(t);
-  RADIO.println(';');
+  Radio::transmit(this->lastPacketID, bmp_temperature, mpu_temperature, pressure, lat, lon, gps_altitude, t);
+//  RADIO.print(this->lastPacketID);
+//  RADIO.print(';');
+//  RADIO.print(int(bmp_temperature * 100));
+//  RADIO.print(';');
+//  RADIO.print(int(mpu_temperature * 100));
+//  RADIO.print(';');
+//  RADIO.print(pressure / 100);
+//  RADIO.print(';');
+//  RADIO.print(lat, 12);
+//  RADIO.print(';');
+//  RADIO.print(lon, 12);
+//  RADIO.print(';');
+//  RADIO.print(gps_altitude, 2);
+//  RADIO.print(';');
+//  RADIO.print(bmp_altitude);
+//  RADIO.print(';');
+//  RADIO.print(int(acceleration.x * 100));
+//  RADIO.print(';');
+//  RADIO.print(int(acceleration.y * 100));
+//  RADIO.print(';');
+//  RADIO.print(int(acceleration.z * 100));
+//  RADIO.print(';');
+//  RADIO.print(int(gyroscope.x * 100));
+//  RADIO.print(';');
+//  RADIO.print(int(gyroscope.y * 100));
+//  RADIO.print(';');
+//  RADIO.print(int(gyroscope.z * 100));
+//  RADIO.print(';');
+//  RADIO.print(t);
+//  RADIO.println(';');
   digitalWrite(2, LOW);
 
-  Serial.print("VDOP: ");
-  Serial.println(vdop->value());
+//  Serial.print("VDOP: ");
+//  Serial.println(vdop->value());
 
   
 	
