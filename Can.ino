@@ -21,7 +21,7 @@ Can can = Can(38, 1016);
 
 // Set the variables for the "delay" without delay()
 unsigned long previousMillis;
-const int interval = 500; // Run the code two times a second
+const int interval = 200; // Run the code two times a second
 
 void setup() {
 	Serial.begin(9600); // Debug serial connection

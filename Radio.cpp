@@ -20,10 +20,12 @@
 // Write to the HardwareSerial::write method of the radio connection
 static void Radio::write(uint8_t c) {
   // Check if we can write at least one byte
-  if (RADIO.availableForWrite() >= 1) {
+//  if (RADIO.availableForWrite() >= 1) {
+//  Serial.print("Radio::write ");
+//  Serial.println(c, DEC);
     RADIO.write(c);
-    return;
-  }
+//    return;
+//  }
 
   // The Arduino was not able to send this message, maybe create an array of transmissions that are waiting to be transmitted?
 }
@@ -41,10 +43,18 @@ static uint8_t Radio::transmit(unsigned int transmission_id, float bmp_temperatu
   int i_mpu_temperature = Radio::float_to_int(mpu_temperature); // Convert the mpu_temperature to an integer
   int i_altitude = Radio::float_to_int(altitude);               // Convert the altitude to an integer
 
+  // Convert everything to a signed int so we can transmit it correctly
+  uint16_t ui16_bmp_temperature = (uint16_t)(i_bmp_temperature + 32768);
+
+//  Serial.println(i_bmp_temperature, HEX);
+
+//  Serial.println(transmission_id);
+
   // Start the transmission
   Radio::write(SOH);                // Start of header
+  if (transmission_id < 256) Radio::write(0x00); // If the value is below an 8 bits unsigned integer, HardwareSerial::write will only send an 8-bits unsigned integer but then the ground station will intepret the data incorrect so we need to send an nullbyte 
   Radio::write(transmission_id);    // Transmission identifier
-  Radio::write(i_bmp_temperature);  // BMP280 temperature
+  Radio::write(ui16_bmp_temperature);  // BMP280 temperature
   Radio::write(i_mpu_temperature);  // MPU6050 temperature
   Radio::write(pressure);           // BMP280 air pressure
   Radio::write(latitude);           // The latitude received from the GPS module

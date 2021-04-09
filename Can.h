@@ -64,7 +64,8 @@
 
 typedef struct {
   char *time;
-  double altitude;
+  float gps_altitude;
+  float mpu_altitude;
 }GPS_Altitude;
 
 class Can {
@@ -76,10 +77,9 @@ class Can {
 
 		uint8_t radioSetPin;	// The pin where the set pin on the radio module is connected to, for configuring purposes
 
-		uint8_t gps_altitude_time_cursor; // Where in the GPS_Altitude[10] array we are (so what's the newest data)
+		uint8_t _gps_altitude_time_cursor; // Where in the GPS_Altitude[10] array we are (so what's the newest data)
 
-		unsigned int lastPacketID;
-		unsigned int ticksPerSecond;
+		unsigned int packet_id;
 
     // GPS accuracy things
     TinyGPSCustom* vdop;
@@ -90,51 +90,52 @@ class Can {
     double last_alt;
     uint8_t gps_error_count;
 
-    /*
-     * 
-     */
-     uint8_t save_data_to_sd(String data);
+    GPS_Altitude _gps_altitude_history[10];
 
-    /*
-     * Saves the time and altitude to the EEPROM
-     * 
-     * @param time [char*] A char[] that has four elements: hour, minutes, seconds and centiseconds
-     * @param altitude [double] The altitude the GPS module shows
-     * 
-     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
-     */
-    uint8_t save_altitude_time_to_eeprom(char *time, double altitude);
 
-    /*
-     * Calculate the air speed (vertical velocity) with the data that has been saved in the EEPROM
-     * 
-     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
-     * @param air_speed [double*] A pointer to the variable where the air speed should be saved
-     * 
-     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
-     */
-    uint8_t calculate_air_speed(double *air_speed);
-          
-    /*
-     * Calculate the expected amount of time it takes until the Can hits the ground
-     * 
-     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
-     * @param altitude [double] The current altitude of the Can in meters
-     * @param air_speed [double] The current air speed (vertical velocity) in m/s
-     * @param exptected_time_until_impact [double*] A pointer to the variable where the expected time until impact should be stored in seconds
-     * 
-     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
-     */
-    uint8_t calculate_expected_time_until_impact(double altitude, double air_speed, double *exptected_time_until_impact);
+     /*
+      * Get the GPS data from the serial connection and encode the data
+      * 
+      * @return [void]
+      */
+      void _encode_gps();
 
-    /*
-     * Save the radio transmission to the SD card
-     * 
-     * @param errors [Error*] A pointer to an Error[] object, if any error will occur it will be saved to this object
-     * 
-     * @return error [uint8_t] If this number is higher than 0 an error occured, the value of the number will tell what the error was
-     */
-    uint8_t save_radio_transmission_to_sd();
+      /*
+       * Save the altitude info to the _gps_altitude_history array
+       * 
+       * @param time [char*] A char array with the hours, minutes, seconds and centiseconds
+       * @param gps_altitude [float] The altitude according to the GPS module
+       * @param mpu_altitude [float] The altitude calculated using the air pressure
+       * 
+       * @return [void]
+       */
+       void _save_altitude(char* time, float gps_altitude, float mpu_altitude);
+
+       /*
+        * Calculate the current vertical velocity
+        * 
+        * @param time [char*] A char array with the hours, minutes, seconds and centiseconds
+        * @param gps_altitude [float] The current altitude according to the GPS module
+        * @param mpu_altitude [float] The current altitude calculated using the air pressure
+        * @param gps_velocity [float*] The location where the vertical velocity based on the GPS data will be stored
+        * @param mpu_velocity [float*] The location where the vertical velocity based on the MPU data will be stored
+        * 
+        * @return [void]
+        */
+        void _calculate_vertical_velocity(char* time, float gps_altitude, float mpu_altitude, float* gps_velocity, float* mpu_velocity);
+
+       /*
+        * Calculate the expected time until the Can hits the ground
+        * 
+        * @param time [char*] A char array with the hours, minutes, seconds and centiseconds
+        * @param gps_altitude [float] The current altitude according to the GPS module
+        * @param mpu_altitude [float] The current altitude calculated using the air pressure
+        * @param gps_time_until_impact [int*] The location where the expected time until impact according to the GPS data will be stored
+        * @param ,[i_time_until_impact [int*] The location where the expected time until impact according to the MPU data will be stored
+        * 
+        * @return [void]
+        */
+        void _calculate_expected_time_until_impact(char* time, float gps_altitude, float mpu_altitude, int* gps_time_until_impact, int* mpu_time_until_impact);
 
 	public:
 //    static const HardwareSerial RADIO = Serial1;
@@ -155,9 +156,9 @@ class Can {
 		Can(int radioSetPin, float sea_level_hPa);
    
     // The Adafruit_BMP280 object to communicate with the BMP280 module
-		Adafruit_BMP280 *bmp;
+		Adafruit_BMP280 bmp;
     // The Adafruit_MPU6050 object to communicate with the MPU6050 module
-		Adafruit_MPU6050 *mpu;
+		Adafruit_MPU6050 mpu;
 
 		/*
 		 * Begins all the serial ports and modules. 

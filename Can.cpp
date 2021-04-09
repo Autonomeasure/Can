@@ -20,82 +20,72 @@
 
 
 // -============= PRIVATE METHODS =============-
-
-// Saves the time and altitude to the EEPROM
-uint8_t Can::save_altitude_time_to_eeprom(char *time, double altitude) {
-  uint8_t error;
-
-  // Save the current time in EEPROM
-  EEPROM.put(EEPROM_GPS_TIME_OFFSET + ((sizeof(char) * 4) * (gps_altitude_time_cursor + 1)), time);
-
-  // Save the current altitude in EEPROM
-  EEPROM.put(EEPROM_GPS_ALTITUDE_OFFSET + (sizeof(double) * (gps_altitude_time_cursor + 1)), altitude);
-
-  // Shift the cursor
-  gps_altitude_time_cursor++;
-  gps_altitude_time_cursor %= 10;
-
-  return error;
+// Get the GPS data from the serial connection and encode the data
+void Can::_encode_gps() {
+  // Gather the GPS data
+  unsigned long start = millis();
+  do {
+    if (GPS.available() > 1) {
+      gps.encode(GPS.read());
+//      Serial.println("GPSSSS");
+    }
+  } while(millis() - start < 250);
 }
 
-// Calculate the air speed (vertical velocity) with the data that has been saved in the EEPROM
-uint8_t Can::calculate_air_speed(double *air_speed) {
-  uint8_t error;
+//  Save the altitude info to the _gps_altitude_history array
+void Can::_save_altitude(char* time, float gps_altitude, float mpu_altitude) {
+  GPS_Altitude altitude;
+  altitude.time = time;
+  altitude.gps_altitude = gps_altitude;
+  altitude.mpu_altitude = mpu_altitude;
 
-  char time1[4];
-  char time2[4];
-  double altitude1;
-  double altitude2;
+  _gps_altitude_history[_gps_altitude_time_cursor] = altitude;
+  _gps_altitude_time_cursor++;
+}
 
-  // Get the last saved time
-  EEPROM.get(EEPROM_GPS_TIME_OFFSET + gps_altitude_time_cursor , time1);
+// Calculate the current vertical velocity
+void Can::_calculate_vertical_velocity(char* time, float gps_altitude, float mpu_altitude, float* gps_velocity, float* mpu_velocity) {
+  // Get the altitude data from ten measurements ago
+  GPS_Altitude old = _gps_altitude_history[_gps_altitude_time_cursor + 1];
 
-  // Get the first saved time
-  EEPROM.get(EEPROM_GPS_TIME_OFFSET + ((gps_altitude_time_cursor + 9) % 10), time2);
+  // First convert everything to seconds
+  int _t_secs;
+  _t_secs += time[0] * 3600; // Hours
+  _t_secs += time[1] * 60; // Minutes
+  _t_secs += time[2]; // Seconds
 
-  // Get the last saved altitude
-  EEPROM.get(EEPROM_GPS_TIME_OFFSET + gps_altitude_time_cursor, altitude1);
-
-  // Get the first saved altitutde
-  EEPROM.get(EEPROM_GPS_TIME_OFFSET + ((gps_altitude_time_cursor + 9) % 10), altitude2);
+  int _old_t_secs;
+  _old_t_secs += old.time[0] * 3600;
+  _old_t_secs += old.time[1] * 60;
+  _old_t_secs += old.time[2];
 
   // Calculate the difference in time
-  uint8_t deltaCentiSeconds = time2[3] - time1[3];
-  uint8_t deltaSeconds = time2[2] - time1[2];
-  uint8_t deltaMinutes = time2[1] - time1[1];
-
-  // Calculate how many seconds have passed (hopefully 10)
-  float passedSeconds = (deltaCentiSeconds / 100) + (deltaSeconds) + (deltaMinutes * 60);
+  int _d_time = _old_t_secs - _t_secs;
 
   // Calculate the difference in altitude
-  double deltaAltitude = altitude2 - altitude1;
-
-  // Calculate the vertical velocity
-  *air_speed = deltaAltitude / passedSeconds;
-
-  return error;
+  float _d_gps_alt = old.gps_altitude - gps_altitude;
+  float _d_mpu_alt = old.mpu_altitude - mpu_altitude;
+  
+  // Divide by the difference in time to get the velocity
+  *gps_velocity = _d_gps_alt / _d_time;
+  *mpu_velocity = _d_mpu_alt / _d_time;
 }
 
-// Calculate the expected amount of time it takes until the Can hits the ground
-uint8_t Can::calculate_expected_time_until_impact(double altitude, double air_speed, double *exptected_time_until_impact) {
-  uint8_t error;
+// Calculate the expected time until the Can hits the ground
+void Can::_calculate_expected_time_until_impact(char* time, float gps_altitude, float mpu_altitude, int* gps_time_until_impact, int* mpu_time_until_impact) {
+  float gps_velocity, mpu_velocity;
+  _calculate_vertical_velocity(time, gps_altitude, mpu_altitude, &gps_velocity, &mpu_velocity);
 
-  return error;
+  // Calculate the time it takes until we hit the ground
+  *gps_time_until_impact = gps_altitude / gps_velocity;
+  *gps_time_until_impact = mpu_altitude / mpu_velocity;
 }
-
 
 // -============= PUBLIC METHODS =============-
-
 // The constructor, sets the radio SET pin variable for later use.
 Can::Can(int radioSetPin, float sea_level_hPa) {
 	// Set all the variables
 	this->radioSetPin = radioSetPin;
-
-	// Create the Adafruit_BMP280 object
-	this->bmp = new Adafruit_BMP280();
-
-	// Create the new Adafruit_BMP280 objct
-	this->mpu = new Adafruit_MPU6050();
 
   // Set the sea level hPa variable
   this->sea_level_hPa = sea_level_hPa;
@@ -119,10 +109,10 @@ uint8_t Can::begin() {
   // Set the radio into "production" mode
 	digitalWrite(this->radioSetPin, HIGH);
 
-	if (!this->bmp->begin()) {
+	if (!bmp.begin()) {
 		error = 1; // BMP280 module failed to initialize
 	}
-	if (!this->mpu->begin()) {
+	if (!mpu.begin()) {
 		error = 2; // MPU6050 module failed to initialize
 	}
 
@@ -185,46 +175,14 @@ uint8_t Can::checkRadioConfiguration() {
 
 // This method will gather all the data from modules and save it to the SD card and send it to the radio
 uint8_t* Can::tick() {
-	uint8_t error;
+  // Gather GPS data
+	_encode_gps();
+  float gps_altitude = gps.altitude.meters(); // The GPS altitude in meters
+  double lat = gps.location.lat(); // The GPS latitude
+  double lon = gps.location.lng(); // The GPS longitude
+  char t[] = {gps.time.hour() + 1, gps.time.minute() + 1, gps.time.second() + 1, gps.time.centisecond() + 1}; // The GPS time
 
-	// Gather the GPS data
-  unsigned long start = millis();
-  do {
-    if (GPS.available() > 1) {
-      gps.encode(GPS.read());
-//      Serial.println("GPSSSS");
-    }
-  } while(millis() - start < 250);
-
-  float gps_altitude;
-
-  uint8_t errorGPSTime;
-  uint8_t errorGPSAltitude;
-  uint8_t errorGPSPosition;
-
-  // Get the time
-  if (!gps.time.isValid()) {
-    errorGPSTime = 30; // Invalid GPS time
-  }
-
-//    TinyGPSTime *t = &gps.time;
-//    char sz[32];
-//    sprintf(sz, "%02d:%02d:%02d ", t->hour(), t->minute(), t->second());
-//    Serial.print(sz);
-
-  // Get the altitude
-  if (!gps.altitude.isValid()) {
-    errorGPSAltitude = 32; // Invalid GPS altitude
-  }
-  gps_altitude = gps.altitude.meters();
-
-  double lat, lon;
-  if (!gps.location.isValid()) {
-    errorGPSPosition = 31; // Invalid GPS location
-  }
-  lat = gps.location.lat();
-  lon = gps.location.lng();
-
+  // Check if the GPS data gets updated or that we lost connection
   if (lat == last_lat && lon == last_lon && gps_altitude == last_alt) {
     gps_error_count++;
   } else {
@@ -234,71 +192,35 @@ uint8_t* Can::tick() {
     last_alt = gps_altitude;
   }
 
-  if ((lat == 0 && lon == 0 && gps_altitude == 0) || (!gps.location.isValid() && !gps.altitude.isValid()) || (gps_error_count > 5)) {
+  // Check if the gps error count is above 5, if that is true set the error_led pin HIGH
+  if (gps_error_count > 5) {
     digitalWrite(error_led, HIGH);
   }
- 
-  float bmp_temperature = this->bmp->readTemperature();
-  float pressure = this->bmp->readPressure();
-  float bmp_altitude = this->bmp->readAltitude(sea_level_hPa);
-  
-  Vector3 acceleration;
-  Vector3 gyroscope;
+
+  // Gather the BMP data
+  float bmp_temperature = bmp.readTemperature();
+  float pressure = bmp.readPressure();
+  float bmp_altitude = bmp.readAltitude(sea_level_hPa);
+
+  // Gather the MPU data
   float mpu_temperature;
   sensors_event_t a, g, temp;
-  bool mpu_data = this->mpu->getEvent(&a, &g, &temp);
+  bool mpu_data = mpu.getEvent(&a, &g, &temp);
 
-  if (!mpu_data) {
-    error = 11; // Invalid MPU6050 data
-    return error;
-  }
-
+  Vector3 acceleration;
+  Vector3 gyroscope;
   acceleration.x = a.acceleration.x;
   acceleration.y = a.acceleration.y;
   acceleration.z = a.acceleration.z;
 
-  gyroscope.x = a.gyro.x;
-  gyroscope.y = a.gyro.y;
-  gyroscope.z = a.gyro.z;
+  gyroscope.x = g.gyro.x;
+  gyroscope.y = g.gyro.y;
+  gyroscope.z = g.gyro.z;
 
   mpu_temperature = temp.temperature;
 
-
-  char t[] = {gps.time.hour() + 1, gps.time.minute() + 1, gps.time.second() + 1, gps.time.centisecond() + 1};
-
-
   digitalWrite(2, HIGH);
-  Radio::transmit(this->lastPacketID, bmp_temperature, mpu_temperature, pressure, lat, lon, gps_altitude, t);
-//  RADIO.print(this->lastPacketID);
-//  RADIO.print(';');
-//  RADIO.print(int(bmp_temperature * 100));
-//  RADIO.print(';');
-//  RADIO.print(int(mpu_temperature * 100));
-//  RADIO.print(';');
-//  RADIO.print(pressure / 100);
-//  RADIO.print(';');
-//  RADIO.print(lat, 12);
-//  RADIO.print(';');
-//  RADIO.print(lon, 12);
-//  RADIO.print(';');
-//  RADIO.print(gps_altitude, 2);
-//  RADIO.print(';');
-//  RADIO.print(bmp_altitude);
-//  RADIO.print(';');
-//  RADIO.print(int(acceleration.x * 100));
-//  RADIO.print(';');
-//  RADIO.print(int(acceleration.y * 100));
-//  RADIO.print(';');
-//  RADIO.print(int(acceleration.z * 100));
-//  RADIO.print(';');
-//  RADIO.print(int(gyroscope.x * 100));
-//  RADIO.print(';');
-//  RADIO.print(int(gyroscope.y * 100));
-//  RADIO.print(';');
-//  RADIO.print(int(gyroscope.z * 100));
-//  RADIO.print(';');
-//  RADIO.print(t);
-//  RADIO.println(';');
+  Radio::transmit(packet_id, bmp_temperature, mpu_temperature, pressure, lat, lon, gps_altitude, t);
   digitalWrite(2, LOW);
 
 //  Serial.print("VDOP: ");
@@ -307,13 +229,13 @@ uint8_t* Can::tick() {
   
 	
 	// Check if the time and altitude should be saved
-	if (this->lastPacketID % this->ticksPerSecond == 0) {
+	if (packet_id % 5 == 0) {
 		// Yep, the time and altitude should be saved
-//		/*amountOfErrors +=*/ save_altitude_time_to_eeprom(alt.time, alt.altitude);
+    _save_altitude(t, gps_altitude, bmp_altitude);
 	}
 
-  this->lastPacketID++;
+  packet_id++;
 
   digitalWrite(error_led, LOW);
- return error;
+  return 0;
 }

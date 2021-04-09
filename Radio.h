@@ -19,6 +19,7 @@
 #if !defined(RADIO_H)
 #define RADIO_H
 #include <Arduino.h>
+#include <math.h>
 //#include "Can.h"
 
 #define RADIO Serial1 // The HardwareSerial object that connects with the APC220 radio module
